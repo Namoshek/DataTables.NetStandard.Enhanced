@@ -14,8 +14,6 @@ script rendering for the `yadcf` filters defined on individual columns.
 
 - [Installation](#installation)
 - [Usage](#usage)
-- [Full Example](#full-example)
-- [Usage](#usage)
 - [Supported Filters](#supported-filters)
   - [TextInput Filter](#textinput-filter)
   - [Select Filter](#select-filter)
