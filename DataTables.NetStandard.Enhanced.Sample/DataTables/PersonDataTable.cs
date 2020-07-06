@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using AutoMapper;
 using DataTables.NetStandard.Enhanced.Filters;
 using DataTables.NetStandard.Enhanced.Sample.DataTables.ViewModels;
 using DataTables.NetStandard.Enhanced.Sample.Models;
@@ -11,7 +12,7 @@ namespace DataTables.NetStandard.Enhanced.Sample.DataTables
     {
         protected SampleDbContext _dbContext;
 
-        public PersonDataTable(SampleDbContext dbContext)
+        public PersonDataTable(IMapper mapper, SampleDbContext dbContext) : base(mapper)
         {
             _dbContext = dbContext;
         }

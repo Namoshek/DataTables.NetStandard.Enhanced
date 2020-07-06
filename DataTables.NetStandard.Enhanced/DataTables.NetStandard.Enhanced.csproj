@@ -8,7 +8,6 @@
     <Company>Namoshek</Company>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Description>Enhanced features for the self-containing DataTable classes for the datatables.net jQuery plugin that manage rendering, querying, filtering, sorting and other desireable tasks for the user.</Description>
-    <PackageLicenseUrl>https://github.com/Namoshek/DataTables.NetStandard/blob/master/LICENSE.md</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/Namoshek/DataTables.NetStandard</PackageProjectUrl>
     <RepositoryUrl>https://github.com/Namoshek/DataTables.NetStandard.git</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
@@ -17,6 +16,7 @@
     <FileVersion>0.0.2.1</FileVersion>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
 
   <ItemGroup>
