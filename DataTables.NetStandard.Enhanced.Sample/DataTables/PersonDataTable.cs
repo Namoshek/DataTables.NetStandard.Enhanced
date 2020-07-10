@@ -29,7 +29,9 @@ namespace DataTables.NetStandard.Enhanced.Sample.DataTables
                     PrivatePropertyName = nameof(Person.Id),
                     IsOrderable = true,
                     IsSearchable = true,
-                    SearchRegex = true
+                    SearchPredicate = (p, s) => s.Contains(p.Id.ToString()),
+                    ColumnSearchPredicateProvider = CreateNumericRangeSearchPredicateProvider(p => p.Id),
+                    ColumnFilter = CreateNumericRangeFilter()
                 },
                 new EnhancedDataTablesColumn<Person, PersonViewModel>
                 {
@@ -68,7 +70,8 @@ namespace DataTables.NetStandard.Enhanced.Sample.DataTables
                     PrivatePropertyName = $"{nameof(Person.Location)}.{nameof(Location.Street)}",
                     IsOrderable = true,
                     IsSearchable = true,
-                    SearchPredicate = (p, s) => (p.Location.Street + " " + p.Location.HouseNumber).ToLower().Contains(s.ToLower())
+                    SearchPredicate = (p, s) => (p.Location.Street + " " + p.Location.HouseNumber).ToLower().Contains(s.ToLower()),
+                    ColumnFilter = CreateTextInputFilter()
                 },
                 new EnhancedDataTablesColumn<Person, PersonViewModel>
                 {
