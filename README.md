@@ -140,6 +140,43 @@ new EnhancedDataTablesColumn<Person, PersonViewModel>
 
 _Please note that also the value of a `LabelValuePair` has always to be a string as the search of DataTables works with strings only._
 
+### NumericRangeFilter Filter
+
+Based on the `TextInputFilter`, the `NumericRangeFilter` allows searching for entities by entering a numeric range in one of the following forms:
+- `42-45` to select entities matching the values 42, 43, 44 and 45
+- `42-` to select entities matching the values 42 and above
+- `-42` to select entities matching the value 42 and below
+- `42` to select the entity matching the value 42
+- any other input like `foo` (i.e. not a number) will return zero results to make the user aware of the wrong input
+
+Defining the column filter alone will not be enough though. It only adds the filter to the table. In order to add the processing logic,
+the `ColumnSearchPredicateProvider` should be set to `CreateNumericRangeSearchPredicateProvider(p => p.Id)` where `p => p.Id` is the predicate
+selecting the column to filter on.
+
+```csharp
+new EnhancedDataTablesColumn<Person, PersonViewModel>
+{
+    PublicName = "id",
+    DisplayName = "ID",
+    PublicPropertyName = nameof(PersonViewModel.Id),
+    PrivatePropertyName = nameof(Person.Id),
+    IsOrderable = true,
+    IsSearchable = true,
+    SearchPredicate = (p, s) => s.Contains(p.Id.ToString()),
+    ColumnSearchPredicateProvider = CreateNumericRangeSearchPredicateProvider(p => p.Id),
+    ColumnFilter = CreateNumericRangeFilter()
+}
+```
+
+The delimiter used to define a range when inputting numbers may also be changed from `-` to something else by passing a different delimiter
+as second parameter to `CreateNumericRangeSearchPredicateProvider()`. This may be useful when searchability for negative numbers is required.
+
+_Note: using this setup, the global search will find individual entries with the searched ID, while the column search may be used to search
+for a range of IDs._
+
+_Note: currently, this filter can be used for `int` and `long` columns. Other numeric types are currently not supported, since parsing them
+is culture dependent._
+
 ## Filter Configuration
 
 When configuring your filters with additional options, you can always choose between configuring only one instance of a filter

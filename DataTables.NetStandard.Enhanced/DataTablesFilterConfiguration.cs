@@ -30,6 +30,12 @@ namespace DataTables.NetStandard.Enhanced
         public string DefaultTextInputPlaceholderValue { get; set; } = "Type to filter";
 
         /// <summary>
+        /// Defines the default placerholder displayed in numeric range inputs.
+        /// Can be used to localize the filter.
+        /// </summary>
+        public string DefaultNumericRangeInputPlaceholderValue { get; set; } = "From - To";
+
+        /// <summary>
         /// Additional filter options used to initialize the yadcf DataTables filter system.
         /// </summary>
         public IDictionary<string, dynamic> AdditionalFilterOptions { get; set; } = new Dictionary<string, dynamic>();
