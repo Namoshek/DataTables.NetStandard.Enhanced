@@ -247,13 +247,11 @@ namespace DataTables.NetStandard.Enhanced
                 }
 
                 var parts = s.Split(new string[] { delimiter }, StringSplitOptions.None);
-                Console.WriteLine($"Part 1 = [{parts[0]}] - Part 2 = [{parts[1]}]");
 
                 if (!string.IsNullOrWhiteSpace(parts[0]) && !string.IsNullOrWhiteSpace(parts[1]))
                 {
                     if (long.TryParse(parts[0], out long min) && long.TryParse(parts[1], out long max))
                     {
-                        Console.WriteLine($"Returning numeric range search expression using given inputs 1.");
                         return BuildNumericRangeSearchExpression(propertySelector, min, max);
                     }
                 }
@@ -262,7 +260,6 @@ namespace DataTables.NetStandard.Enhanced
                 {
                     if (long.TryParse(parts[0], out long min))
                     {
-                        Console.WriteLine($"Returning numeric range search expression using given inputs 2.");
                         return BuildNumericRangeSearchExpression(propertySelector, min, null);
                     }
                 }
@@ -271,7 +268,51 @@ namespace DataTables.NetStandard.Enhanced
                 {
                     if (long.TryParse(parts[1], out long max))
                     {
-                        Console.WriteLine($"Returning numeric range search expression using given inputs 3.");
+                        return BuildNumericRangeSearchExpression(propertySelector, null, max);
+                    }
+                }
+
+                return (e, s) => true;
+            };
+        }
+
+        /// <summary>
+        /// Returns a numeric range search predicate provider expression for the given <paramref name="propertySelector"/>.
+        /// </summary>
+        /// <param name="propertySelector"></param>
+        /// <param name="delimiter"></param>
+        /// <returns></returns>
+        protected virtual Func<string, Expression<Func<TEntity, string, bool>>> CreateNumericRangeSearchPredicateProvider(Expression<Func<TEntity, int>> propertySelector, string delimiter = "-")
+        {
+            return (s) =>
+            {
+                if (string.IsNullOrWhiteSpace(s) || !s.Contains(delimiter))
+                {
+                    return (e, s) => true;
+                }
+
+                var parts = s.Split(new string[] { delimiter }, StringSplitOptions.None);
+
+                if (!string.IsNullOrWhiteSpace(parts[0]) && !string.IsNullOrWhiteSpace(parts[1]))
+                {
+                    if (int.TryParse(parts[0], out int min) && int.TryParse(parts[1], out int max))
+                    {
+                        return BuildNumericRangeSearchExpression(propertySelector, min, max);
+                    }
+                }
+
+                if (!string.IsNullOrWhiteSpace(parts[0]))
+                {
+                    if (int.TryParse(parts[0], out int min))
+                    {
+                        return BuildNumericRangeSearchExpression(propertySelector, min, null);
+                    }
+                }
+
+                if (!string.IsNullOrWhiteSpace(parts[1]))
+                {
+                    if (int.TryParse(parts[1], out int max))
+                    {
                         return BuildNumericRangeSearchExpression(propertySelector, null, max);
                     }
                 }
@@ -298,6 +339,41 @@ namespace DataTables.NetStandard.Enhanced
             var minConst = Expression.Constant(min ?? 0, typeof(long));
             var maxConst = Expression.Constant(max ?? long.MaxValue, typeof(long));
             var nullConst = Expression.Constant(null, typeof(long?));
+
+            return Expression.Lambda<Func<TEntity, string, bool>>(
+                Expression.AndAlso(
+                    Expression.OrElse(
+                        Expression.Equal(nullableMinConst, nullConst),
+                        Expression.GreaterThanOrEqual(
+                            Expression.Property(entityParam, PropertyHelper<TEntity>.GetProperty(propertySelector)),
+                            minConst)),
+                    Expression.OrElse(
+                        Expression.Equal(nullableMaxConst, nullConst),
+                        Expression.LessThanOrEqual(
+                            Expression.Property(entityParam, PropertyHelper<TEntity>.GetProperty(propertySelector)),
+                            maxConst))),
+                entityParam,
+                searchTermParam);
+        }
+
+        /// <summary>
+        /// Builds a numeric range search expression using the given inputs. The expression will ignore borders set to <c>null</c>
+        /// while filtering the data.
+        /// </summary>
+        /// <param name="propertySelector"></param>
+        /// <param name="min"></param>
+        /// <param name="max"></param>
+        /// <returns></returns>
+        protected virtual Expression<Func<TEntity, string, bool>> BuildNumericRangeSearchExpression(Expression<Func<TEntity, int>> propertySelector, int? min, int? max)
+        {
+            var entityParam = Expression.Parameter(typeof(TEntity), "e");
+            var searchTermParam = Expression.Parameter(typeof(string), "s");
+
+            var nullableMinConst = Expression.Constant(min, typeof(int?));
+            var nullableMaxConst = Expression.Constant(max, typeof(int?));
+            var minConst = Expression.Constant(min ?? 0, typeof(int));
+            var maxConst = Expression.Constant(max ?? long.MaxValue, typeof(int));
+            var nullConst = Expression.Constant(null, typeof(int?));
 
             return Expression.Lambda<Func<TEntity, string, bool>>(
                 Expression.AndAlso(
