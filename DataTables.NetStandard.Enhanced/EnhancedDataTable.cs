@@ -241,9 +241,19 @@ namespace DataTables.NetStandard.Enhanced
         {
             return (s) =>
             {
-                if (string.IsNullOrWhiteSpace(s) || !s.Contains(delimiter))
+                if (string.IsNullOrWhiteSpace(s))
                 {
                     return (e, s) => true;
+                }
+
+                if (!s.Contains(delimiter))
+                {
+                    if (long.TryParse(s, out long val))
+                    {
+                        return BuildNumericRangeSearchExpression(propertySelector, val, val);
+                    }
+
+                    return (e, s) => false;
                 }
 
                 var parts = s.Split(new string[] { delimiter }, StringSplitOptions.None);
@@ -286,9 +296,19 @@ namespace DataTables.NetStandard.Enhanced
         {
             return (s) =>
             {
-                if (string.IsNullOrWhiteSpace(s) || !s.Contains(delimiter))
+                if (string.IsNullOrWhiteSpace(s))
                 {
                     return (e, s) => true;
+                }
+
+                if (!s.Contains(delimiter))
+                {
+                    if (int.TryParse(s, out int val))
+                    {
+                        return BuildNumericRangeSearchExpression(propertySelector, val, val);
+                    }
+
+                    return (e, s) => false;
                 }
 
                 var parts = s.Split(new string[] { delimiter }, StringSplitOptions.None);
