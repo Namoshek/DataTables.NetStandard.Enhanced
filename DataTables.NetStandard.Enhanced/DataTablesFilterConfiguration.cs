@@ -30,16 +30,10 @@ namespace DataTables.NetStandard.Enhanced
         public string DefaultTextInputPlaceholderValue { get; set; } = "Type to filter";
 
         /// <summary>
-        /// Defines the default placerholder displayed in numeric range min value inputs.
+        /// Defines the default placerholder displayed in numeric range inputs.
         /// Can be used to localize the filter.
         /// </summary>
-        public string DefaultNumericRangeInputPlaceholderMinValue { get; set; } = "Min";
-
-        /// <summary>
-        /// Defines the default placerholder displayed in numeric range max value inputs.
-        /// Can be used to localize the filter.
-        /// </summary>
-        public string DefaultNumericRangeInputPlaceholderMaxValue { get; set; } = "Max";
+        public string DefaultNumericRangeInputPlaceholderValue { get; set; } = "From - To";
 
         /// <summary>
         /// Additional filter options used to initialize the yadcf DataTables filter system.

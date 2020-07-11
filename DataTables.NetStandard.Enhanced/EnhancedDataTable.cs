@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using DataTables.NetStandard.Enhanced.Filters;
+using DataTables.NetStandard.Enhanced.Util;
 using DataTables.NetStandard.Extensions;
+using DataTables.NetStandard.Util;
 using MoreLinq.Extensions;
 using Newtonsoft.Json;
 
@@ -147,9 +149,8 @@ namespace DataTables.NetStandard.Enhanced
         {
             var filter = new NumericRangeFilter
             {
-                PlaceholderMinValue = _filterConfiguration.DefaultNumericRangeInputPlaceholderMinValue,
-                PlaceholderMaxValue = _filterConfiguration.DefaultNumericRangeInputPlaceholderMaxValue,
-                AdditionalOptions = _filterConfiguration.GetAdditionalColumnFilterOptions(typeof(TextInputFilter)),
+                PlaceholderValue = _filterConfiguration.DefaultNumericRangeInputPlaceholderValue,
+                AdditionalOptions = _filterConfiguration.GetAdditionalColumnFilterOptions(typeof(NumericRangeFilter)),
             };
 
             configure?.Invoke(filter);
@@ -236,7 +237,7 @@ namespace DataTables.NetStandard.Enhanced
         /// <param name="propertySelector"></param>
         /// <param name="delimiter"></param>
         /// <returns></returns>
-        protected virtual Func<string, Expression<Func<TEntity, string, bool>>> CreateNumericRangeSearchPredicateProvider(Expression<Func<TEntity, long>> propertySelector, string delimiter = "-yadcf_delim-")
+        protected virtual Func<string, Expression<Func<TEntity, string, bool>>> CreateNumericRangeSearchPredicateProvider(Expression<Func<TEntity, long>> propertySelector, string delimiter = "-")
         {
             return (s) =>
             {
@@ -292,21 +293,23 @@ namespace DataTables.NetStandard.Enhanced
             var entityParam = Expression.Parameter(typeof(TEntity), "e");
             var searchTermParam = Expression.Parameter(typeof(string), "s");
 
-            var minConst = Expression.Constant(min, typeof(long?));
-            var maxConst = Expression.Constant(max, typeof(long?));
+            var nullableMinConst = Expression.Constant(min, typeof(long?));
+            var nullableMaxConst = Expression.Constant(max, typeof(long?));
+            var minConst = Expression.Constant(min ?? 0, typeof(long));
+            var maxConst = Expression.Constant(max ?? long.MaxValue, typeof(long));
             var nullConst = Expression.Constant(null, typeof(long?));
 
             return Expression.Lambda<Func<TEntity, string, bool>>(
                 Expression.AndAlso(
                     Expression.OrElse(
-                        Expression.Equal(minConst, nullConst),
+                        Expression.Equal(nullableMinConst, nullConst),
                         Expression.GreaterThanOrEqual(
-                            Expression.Invoke(propertySelector, entityParam),
+                            Expression.Property(entityParam, PropertyHelper<TEntity>.GetProperty(propertySelector)),
                             minConst)),
                     Expression.OrElse(
-                        Expression.Equal(maxConst, nullConst),
+                        Expression.Equal(nullableMaxConst, nullConst),
                         Expression.LessThanOrEqual(
-                            Expression.Invoke(propertySelector, entityParam),
+                            Expression.Property(entityParam, PropertyHelper<TEntity>.GetProperty(propertySelector)),
                             maxConst))),
                 entityParam,
                 searchTermParam);
