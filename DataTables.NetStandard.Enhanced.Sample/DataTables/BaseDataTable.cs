@@ -23,6 +23,7 @@ namespace DataTables.NetStandard.Enhanced.Sample.DataTables
         protected override void ConfigureFilters(DataTablesFilterConfiguration configuration)
         {
             configuration.DefaultSelectionLabelValue = "Select something";
+            configuration.DefaultMultiSelectionLabelValue = "All";
             configuration.DefaultTextInputPlaceholderValue = "Type to find";
 
             configuration.AdditionalFilterOptions.Add("filters_position", "footer");

@@ -33,5 +33,32 @@ namespace DataTables.NetStandard.Enhanced.Util
                     throw new InvalidOperationException();
             }
         }
+
+        /// <summary>
+        /// Retrieve a <see cref="MemberExpression"/> from a property selector, which can also be a nested one.
+        /// </summary>
+        /// <param name="expression"></param>
+        /// <returns></returns>
+        public static MemberExpression GetMemberExpression(Expression expression)
+        {
+            if (expression is MemberExpression)
+            {
+                return (MemberExpression)expression;
+            }
+            
+            if (expression is LambdaExpression lambdaExpression)
+            {
+                if (lambdaExpression.Body is MemberExpression)
+                {
+                    return (MemberExpression)lambdaExpression.Body;
+                }
+                else if (lambdaExpression.Body is UnaryExpression)
+                {
+                    return ((MemberExpression)((UnaryExpression)lambdaExpression.Body).Operand);
+                }
+            }
+
+            return null;
+        }
     }
 }

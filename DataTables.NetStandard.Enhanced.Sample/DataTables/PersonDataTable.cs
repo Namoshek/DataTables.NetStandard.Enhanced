@@ -84,7 +84,8 @@ namespace DataTables.NetStandard.Enhanced.Sample.DataTables
                     PrivatePropertyName = $"{nameof(Person.Location)}.{nameof(Location.PostCode)}",
                     IsOrderable = true,
                     IsSearchable = true,
-                    ColumnFilter = CreateSelectFilter(p => new LabelValuePair(p.Location.PostCode))
+                    SearchPredicateProvider = CreateMultiSelectSearchPredicateProvider(p => p.Location.PostCode),
+                    ColumnFilter = CreateMultiSelectFilter(p => new LabelValuePair(p.Location.PostCode))
                 },
                 new EnhancedDataTablesColumn<Person, PersonViewModel>
                 {
@@ -165,6 +166,7 @@ namespace DataTables.NetStandard.Enhanced.Sample.DataTables
             base.ConfigureFilters(configuration);
 
             configuration.DefaultSelectionLabelValue = "Select anything";
+            configuration.DefaultMultiSelectionLabelValue = "Select all";
         }
 
         protected override void ConfigureAdditionalOptions(DataTablesConfiguration configuration, IList<DataTablesColumn<Person, PersonViewModel>> columns)

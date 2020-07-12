@@ -24,6 +24,12 @@ namespace DataTables.NetStandard.Enhanced
         public string DefaultSelectionLabelValue { get; set; } = "Select value";
 
         /// <summary>
+        /// Defines the default label displayed on multi select filters if <see cref="EnableDefaultSelectionLabel"/>
+        /// is enabled. Can be used to localize the filters.
+        /// </summary>
+        public string DefaultMultiSelectionLabelValue { get; set; } = "Select all";
+
+        /// <summary>
         /// Defines the default placerholder displayed in text inputs. Can be used to localize
         /// the filter.
         /// </summary>
