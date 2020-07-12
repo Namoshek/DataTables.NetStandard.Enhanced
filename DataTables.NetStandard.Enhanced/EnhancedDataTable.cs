@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using DataTables.NetStandard.Enhanced.Filters;
 using DataTables.NetStandard.Enhanced.Util;
 using DataTables.NetStandard.Extensions;
@@ -161,6 +162,49 @@ namespace DataTables.NetStandard.Enhanced
                 .DistinctBy(e => e.Value)
                 .ToList();
         }
+        
+        /// Creates a new multi select filter based on the default configuration and the given key value selector.
+        /// Can be further configured by the given <paramref name="configure"/> action.
+        /// </summary>
+        /// <param name="keyValueSelector"></param>
+        /// <param name="configure"></param>
+        /// <returns></returns>
+        public virtual MultiSelectFilter<TEntity> CreateMultiSelectFilter(Expression<Func<TEntity, LabelValuePair>> keyValueSelector,
+            Action<MultiSelectFilter<TEntity>> configure = null)
+        {
+            var filter = new MultiSelectFilter<TEntity>(keyValueSelector)
+            {
+                EnableDefaultSelectionLabel = _filterConfiguration.EnableDefaultSelectionLabel,
+                DefaultSelectionLabelValue = _filterConfiguration.DefaultMultiSelectionLabelValue,
+                AdditionalOptions = _filterConfiguration.GetAdditionalColumnFilterOptions(typeof(MultiSelectFilter<TEntity>)),
+            };
+
+            configure?.Invoke(filter);
+
+            return filter;
+        }
+
+        /// <summary>
+        /// Creates a new multi select filter based on the default configuration and the given filter options.
+        /// Can be further configured by the given <paramref name="configure"/> action.
+        /// </summary>
+        /// <param name="filterOptions"></param>
+        /// <param name="configure"></param>
+        /// <returns></returns>
+        public virtual MultiSelectFilter<TEntity> CreateMultiSelectFilter(IList<LabelValuePair> filterOptions,
+            Action<MultiSelectFilter<TEntity>> configure = null)
+        {
+            var filter = new MultiSelectFilter<TEntity>(filterOptions)
+            {
+                EnableDefaultSelectionLabel = _filterConfiguration.EnableDefaultSelectionLabel,
+                DefaultSelectionLabelValue = _filterConfiguration.DefaultMultiSelectionLabelValue,
+                AdditionalOptions = _filterConfiguration.GetAdditionalColumnFilterOptions(typeof(MultiSelectFilter<TEntity>)),
+            };
+
+            configure?.Invoke(filter);
+
+            return filter;
+        }
 
         /// <summary>
         /// Creates a new numeric range input filter based on the default configuration.
@@ -252,6 +296,48 @@ namespace DataTables.NetStandard.Enhanced
             return columns.Where(c => c.ColumnFilter != null)
                 .Select(c => c.ColumnFilter.GetFilterOptions(columns.IndexOf(c)))
                 .ToList();
+        }
+        #endregion
+
+        #region multi_select_filter
+        /// <summary>
+        /// Returns a multi select search predicate provider expression for the given <paramref name="propertySelector"/>.
+        /// </summary>
+        /// <param name="propertySelector"></param>
+        /// <param name="delimiter"></param>
+        /// <returns></returns>
+        protected virtual Func<string, Expression<Func<TEntity, string, bool>>> CreateMultiSelectSearchPredicateProvider(Expression<Func<TEntity, string>> propertySelector, string delimiter = "|")
+        {
+            return (s) =>
+            {
+                var items = s.Split(new string[] { delimiter }, StringSplitOptions.RemoveEmptyEntries);
+
+                return BuildMultiSelectSearchExpression(propertySelector, new List<string>(items));
+            };
+        }
+
+        /// <summary>
+        /// Builds a multi select search expression using the given inputs.
+        /// </summary>
+        /// <param name="propertySelector"></param>
+        /// <param name="items"></param>
+        /// <returns></returns>
+        protected virtual Expression<Func<TEntity, string, bool>> BuildMultiSelectSearchExpression(Expression<Func<TEntity, string>> propertySelector, List<string> items)
+        {
+            var entityParam = propertySelector.Parameters.First();
+            var searchTermParam = Expression.Parameter(typeof(string), "s");
+
+            var itemsConst = Expression.Constant(items, typeof(List<string>));
+
+            var containsMethod = typeof(List<string>).GetMethod(nameof(List<string>.Contains), new Type[] { typeof(string) });
+
+            return Expression.Lambda<Func<TEntity, string, bool>>(
+                Expression.Call(
+                    itemsConst,
+                    containsMethod,
+                    PropertyHelper<TEntity>.GetMemberExpression(propertySelector)),
+                entityParam,
+                searchTermParam);
         }
         #endregion
 
