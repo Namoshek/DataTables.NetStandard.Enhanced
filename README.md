@@ -140,7 +140,7 @@ new EnhancedDataTablesColumn<Person, PersonViewModel>
 
 _Please note that also the value of a `LabelValuePair` has always to be a string as the search of DataTables works with strings only._
 
-### NumericRangeFilter Filter
+### NumericRange Filter
 
 Based on the `TextInputFilter`, the `NumericRangeFilter` allows searching for entities by entering a numeric range in one of the following forms:
 - `42-45` to select entities matching the values 42, 43, 44 and 45
@@ -176,6 +176,43 @@ for a range of IDs._
 
 _Note: currently, this filter can be used for `int` and `long` columns. Other numeric types are currently not supported, since parsing them
 is culture dependent._
+
+### DateRange Filter
+
+Based on the `TextInputFilter`, the `DateRangeFilter` allows searching for entities by entering a date range in one of the following forms:
+- `2020-01-01~2020-12-31` to select entities with a date in the year 2020
+- `2020-01-01~` to select entities with a date in the year 2020 or after
+- `~2020-12-31` to select entities with a date in the year 2020 or before
+- `2020-01-01` to select entities with the given date (and time)
+- any other input like `foo` (i.e. not a date) will return zero results to make the user aware of the wrong input
+
+Defining the column filter alone will not be enough though. It only adds the filter to the table. In order to add the processing logic,
+the `ColumnSearchPredicateProvider` should be set to `CreateDateRangeSearchPredicateProvider(p => p.SomeDate)` where `p => p.SomeDate`
+is the predicate selecting the column to filter on.
+
+```csharp
+new EnhancedDataTablesColumn<Person, PersonViewModel>
+{
+    PublicName = "dateOfBirth",
+    DisplayName = "Date of Birth",
+    PublicPropertyName = nameof(PersonViewModel.DateOfBirth),
+    PrivatePropertyName = nameof(Person.DateOfBirth),
+    IsOrderable = true,
+    IsSearchable = true,
+    SearchPredicate = (p, s) => false,
+    ColumnSearchPredicateProvider = CreateDateRangeSearchPredicateProvider(p => p.DateOfBirth),
+    ColumnFilter = CreateDateRangeFilter()
+}
+```
+
+The delimiter used to define a range when inputting dates may also be changed from `~` to something else by passing a different delimiter
+as second parameter to `CreateDateRangeSearchPredicateProvider()`. This may be useful when localizing the filter.
+
+_Note: using above setup, when searching for single dates, the filter will match the time `00:00:00` when entering a date only._
+
+_Note: if required for additional localization, the third parameter of the `CreateDateRangeSearchPredicateProvider()` method can be used
+to provide a custom date parser function. The search input is split using the given delimiter and the retrieved parts are then passed
+to this function._
 
 ## Filter Configuration
 

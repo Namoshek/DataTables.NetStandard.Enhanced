@@ -5,7 +5,6 @@ using System.Linq.Expressions;
 using DataTables.NetStandard.Enhanced.Filters;
 using DataTables.NetStandard.Enhanced.Util;
 using DataTables.NetStandard.Extensions;
-using DataTables.NetStandard.Util;
 using MoreLinq.Extensions;
 using Newtonsoft.Json;
 
@@ -20,6 +19,7 @@ namespace DataTables.NetStandard.Enhanced
             _filterConfiguration = new DataTablesFilterConfiguration();
         }
 
+        #region table_overrides
         /// <summary>
         /// Enhanced column definitions for this DataTable. Replaces normal column definitions.
         /// </summary>
@@ -75,7 +75,9 @@ namespace DataTables.NetStandard.Enhanced
 
             return script;
         }
+        #endregion
 
+        #region filter_factories
         /// <summary>
         /// Creates a new text input filter based on the default configuration.
         /// Can be further configured by the given <paramref name="configure"/> action.
@@ -140,25 +142,6 @@ namespace DataTables.NetStandard.Enhanced
         }
 
         /// <summary>
-        /// Creates a new numeric range input filter based on the default configuration.
-        /// Can be further configured by the given <paramref name="configure"/> action.
-        /// </summary>
-        /// <param name="configure"></param>
-        /// <returns></returns>
-        public virtual NumericRangeFilter CreateNumericRangeFilter(Action<NumericRangeFilter> configure = null)
-        {
-            var filter = new NumericRangeFilter
-            {
-                PlaceholderValue = _filterConfiguration.DefaultNumericRangeInputPlaceholderValue,
-                AdditionalOptions = _filterConfiguration.GetAdditionalColumnFilterOptions(typeof(NumericRangeFilter)),
-            };
-
-            configure?.Invoke(filter);
-
-            return filter;
-        }
-
-        /// <summary>
         /// Returns a list of distinct column values that can be used for select filters.
         /// </summary>
         /// <param name="property"></param>
@@ -179,6 +162,46 @@ namespace DataTables.NetStandard.Enhanced
                 .ToList();
         }
 
+        /// <summary>
+        /// Creates a new numeric range input filter based on the default configuration.
+        /// Can be further configured by the given <paramref name="configure"/> action.
+        /// </summary>
+        /// <param name="configure"></param>
+        /// <returns></returns>
+        public virtual NumericRangeFilter CreateNumericRangeFilter(Action<NumericRangeFilter> configure = null)
+        {
+            var filter = new NumericRangeFilter
+            {
+                PlaceholderValue = _filterConfiguration.DefaultNumericRangeInputPlaceholderValue,
+                AdditionalOptions = _filterConfiguration.GetAdditionalColumnFilterOptions(typeof(NumericRangeFilter)),
+            };
+
+            configure?.Invoke(filter);
+
+            return filter;
+        }
+
+        /// <summary>
+        /// Creates a new date range input filter based on the default configuration.
+        /// Can be further configured by the given <paramref name="configure"/> action.
+        /// </summary>
+        /// <param name="configure"></param>
+        /// <returns></returns>
+        public virtual DateRangeFilter CreateDateRangeFilter(Action<DateRangeFilter> configure = null)
+        {
+            var filter = new DateRangeFilter
+            {
+                PlaceholderValue = _filterConfiguration.DefaultDateRangeInputPlaceholderValue,
+                AdditionalOptions = _filterConfiguration.GetAdditionalColumnFilterOptions(typeof(DateRangeFilter)),
+            };
+
+            configure?.Invoke(filter);
+
+            return filter;
+        }
+        #endregion
+
+        #region configuration
         /// <summary>
         /// Allows to configure the DataTable instance.
         /// </summary>
@@ -230,7 +253,9 @@ namespace DataTables.NetStandard.Enhanced
                 .Select(c => c.ColumnFilter.GetFilterOptions(columns.IndexOf(c)))
                 .ToList();
         }
+        #endregion
 
+        #region numeric_range_filters
         /// <summary>
         /// Returns a numeric range search predicate provider expression for the given <paramref name="propertySelector"/>.
         /// </summary>
@@ -284,6 +309,41 @@ namespace DataTables.NetStandard.Enhanced
 
                 return (e, s) => true;
             };
+        }
+
+        /// <summary>
+        /// Builds a numeric range search expression using the given inputs. The expression will ignore borders set to <c>null</c>
+        /// while filtering the data.
+        /// </summary>
+        /// <param name="propertySelector"></param>
+        /// <param name="min"></param>
+        /// <param name="max"></param>
+        /// <returns></returns>
+        protected virtual Expression<Func<TEntity, string, bool>> BuildNumericRangeSearchExpression(Expression<Func<TEntity, long>> propertySelector, long? min, long? max)
+        {
+            var entityParam = Expression.Parameter(typeof(TEntity), "e");
+            var searchTermParam = Expression.Parameter(typeof(string), "s");
+
+            var nullableMinConst = Expression.Constant(min, typeof(long?));
+            var nullableMaxConst = Expression.Constant(max, typeof(long?));
+            var minConst = Expression.Constant(min ?? 0, typeof(long));
+            var maxConst = Expression.Constant(max ?? long.MaxValue, typeof(long));
+            var nullConst = Expression.Constant(null, typeof(long?));
+
+            return Expression.Lambda<Func<TEntity, string, bool>>(
+                Expression.AndAlso(
+                    Expression.OrElse(
+                        Expression.Equal(nullableMinConst, nullConst),
+                        Expression.GreaterThanOrEqual(
+                            Expression.Property(entityParam, PropertyHelper<TEntity>.GetProperty(propertySelector)),
+                            minConst)),
+                    Expression.OrElse(
+                        Expression.Equal(nullableMaxConst, nullConst),
+                        Expression.LessThanOrEqual(
+                            Expression.Property(entityParam, PropertyHelper<TEntity>.GetProperty(propertySelector)),
+                            maxConst))),
+                entityParam,
+                searchTermParam);
         }
 
         /// <summary>
@@ -349,41 +409,6 @@ namespace DataTables.NetStandard.Enhanced
         /// <param name="min"></param>
         /// <param name="max"></param>
         /// <returns></returns>
-        protected virtual Expression<Func<TEntity, string, bool>> BuildNumericRangeSearchExpression(Expression<Func<TEntity, long>> propertySelector, long? min, long? max)
-        {
-            var entityParam = Expression.Parameter(typeof(TEntity), "e");
-            var searchTermParam = Expression.Parameter(typeof(string), "s");
-
-            var nullableMinConst = Expression.Constant(min, typeof(long?));
-            var nullableMaxConst = Expression.Constant(max, typeof(long?));
-            var minConst = Expression.Constant(min ?? 0, typeof(long));
-            var maxConst = Expression.Constant(max ?? long.MaxValue, typeof(long));
-            var nullConst = Expression.Constant(null, typeof(long?));
-
-            return Expression.Lambda<Func<TEntity, string, bool>>(
-                Expression.AndAlso(
-                    Expression.OrElse(
-                        Expression.Equal(nullableMinConst, nullConst),
-                        Expression.GreaterThanOrEqual(
-                            Expression.Property(entityParam, PropertyHelper<TEntity>.GetProperty(propertySelector)),
-                            minConst)),
-                    Expression.OrElse(
-                        Expression.Equal(nullableMaxConst, nullConst),
-                        Expression.LessThanOrEqual(
-                            Expression.Property(entityParam, PropertyHelper<TEntity>.GetProperty(propertySelector)),
-                            maxConst))),
-                entityParam,
-                searchTermParam);
-        }
-
-        /// <summary>
-        /// Builds a numeric range search expression using the given inputs. The expression will ignore borders set to <c>null</c>
-        /// while filtering the data.
-        /// </summary>
-        /// <param name="propertySelector"></param>
-        /// <param name="min"></param>
-        /// <param name="max"></param>
-        /// <returns></returns>
         protected virtual Expression<Func<TEntity, string, bool>> BuildNumericRangeSearchExpression(Expression<Func<TEntity, int>> propertySelector, int? min, int? max)
         {
             var entityParam = Expression.Parameter(typeof(TEntity), "e");
@@ -410,5 +435,254 @@ namespace DataTables.NetStandard.Enhanced
                 entityParam,
                 searchTermParam);
         }
+        #endregion
+
+        #region date_range_filters
+        /// <summary>
+        /// Returns a date range search predicate provider expression for the given <paramref name="propertySelector"/>.
+        /// </summary>
+        /// <param name="propertySelector"></param>
+        /// <param name="delimiter"></param>
+        /// <param name="dateParseFunction"></param>
+        /// <returns></returns>
+        protected virtual Func<string, Expression<Func<TEntity, string, bool>>> CreateDateRangeSearchPredicateProvider(
+            Expression<Func<TEntity, DateTimeOffset>> propertySelector, 
+            string delimiter = "~",
+            Func<string, DateTimeOffset?> dateParseFunction = null)
+        {
+            if (dateParseFunction == null)
+            {
+                dateParseFunction = (s) =>
+                {
+                    if (DateTimeOffset.TryParse(s, out DateTimeOffset val))
+                    {
+                        return val;
+                    }
+
+                    return null;
+                };
+            }
+
+            return (s) =>
+            {
+                if (string.IsNullOrWhiteSpace(s))
+                {
+                    return (e, s) => true;
+                }
+
+                if (!s.Contains(delimiter))
+                {
+                    var val = dateParseFunction(s);
+
+                    return val != null
+                        ? BuilDateRangeSearchExpression(propertySelector, val, val)
+                        : (e, s) => false;
+                }
+
+                var parts = s.Split(new string[] { delimiter }, StringSplitOptions.None);
+
+                if (!string.IsNullOrWhiteSpace(parts[0]) && !string.IsNullOrWhiteSpace(parts[1]))
+                {
+                    var min = dateParseFunction(parts[0]);
+                    var max = dateParseFunction(parts[1]);
+
+                    return min != null && max != null
+                        ? BuilDateRangeSearchExpression(propertySelector, min, max)
+                        : (e, s) => false;
+                }
+
+                if (!string.IsNullOrWhiteSpace(parts[0]))
+                {
+                    var min = dateParseFunction(parts[0]);
+
+                    return min != null
+                        ? BuilDateRangeSearchExpression(propertySelector, min, null)
+                        : (e, s) => false;
+                }
+
+                if (!string.IsNullOrWhiteSpace(parts[1]))
+                {
+                    var max = dateParseFunction(parts[1]);
+
+                    return max != null
+                        ? BuilDateRangeSearchExpression(propertySelector, null, max)
+                        : (e, s) => false;
+                }
+
+                return (e, s) => true;
+            };
+        }
+
+        /// <summary>
+        /// Builds a date range search expression using the given inputs. The expression uses "inclusive" comparison for
+        /// the lower border and "exclusive" comparison for the higher border.
+        /// </summary>
+        /// <param name="propertySelector"></param>
+        /// <param name="min"></param>
+        /// <param name="max"></param>
+        /// <returns></returns>
+        protected virtual Expression<Func<TEntity, string, bool>> BuilDateRangeSearchExpression(
+            Expression<Func<TEntity, DateTimeOffset>> propertySelector, 
+            DateTimeOffset? min, 
+            DateTimeOffset? max)
+        {
+            var entityParam = Expression.Parameter(typeof(TEntity), "e");
+            var searchTermParam = Expression.Parameter(typeof(string), "s");
+
+            var nullableMinConst = Expression.Constant(min, typeof(DateTimeOffset?));
+            var nullableMaxConst = Expression.Constant(max, typeof(DateTimeOffset?));
+            var minConst = Expression.Constant(min ?? DateTimeOffset.MinValue, typeof(DateTimeOffset));
+            var maxConst = Expression.Constant(max ?? DateTimeOffset.MaxValue, typeof(DateTimeOffset));
+            var nullConst = Expression.Constant(null, typeof(DateTimeOffset?));
+
+            if (min.HasValue && max.HasValue && min == max)
+            {
+                return Expression.Lambda<Func<TEntity, string, bool>>(
+                    Expression.Equal(
+                        Expression.Property(entityParam, PropertyHelper<TEntity>.GetProperty(propertySelector)),
+                        minConst),
+                    entityParam,
+                    searchTermParam);
+            }
+
+            return Expression.Lambda<Func<TEntity, string, bool>>(
+                Expression.AndAlso(
+                    Expression.OrElse(
+                        Expression.Equal(nullableMinConst, nullConst),
+                        Expression.GreaterThanOrEqual(
+                            Expression.Property(entityParam, PropertyHelper<TEntity>.GetProperty(propertySelector)),
+                            minConst)),
+                    Expression.OrElse(
+                        Expression.Equal(nullableMaxConst, nullConst),
+                        Expression.LessThan(
+                            Expression.Property(entityParam, PropertyHelper<TEntity>.GetProperty(propertySelector)),
+                            maxConst))),
+                entityParam,
+                searchTermParam);
+        }
+
+        /// <summary>
+        /// Returns a date range search predicate provider expression for the given <paramref name="propertySelector"/>.
+        /// </summary>
+        /// <param name="propertySelector"></param>
+        /// <param name="delimiter"></param>
+        /// <param name="dateParseFunction"></param>
+        /// <returns></returns>
+        protected virtual Func<string, Expression<Func<TEntity, string, bool>>> CreateDateRangeSearchPredicateProvider(
+            Expression<Func<TEntity, DateTime>> propertySelector, 
+            string delimiter = "~",
+            Func<string, DateTime?> dateParseFunction = null)
+        {
+            if (dateParseFunction == null)
+            {
+                dateParseFunction = (s) =>
+                {
+                    if (DateTime.TryParse(s, out DateTime val))
+                    {
+                        return val;
+                    }
+
+                    return null;
+                };
+            }
+
+            return (s) =>
+            {
+                if (string.IsNullOrWhiteSpace(s))
+                {
+                    return (e, s) => true;
+                }
+
+                if (!s.Contains(delimiter))
+                {
+                    var val = dateParseFunction(s);
+
+                    return val != null
+                        ? BuilDateRangeSearchExpression(propertySelector, val, val)
+                        : (e, s) => false;
+                }
+
+                var parts = s.Split(new string[] { delimiter }, StringSplitOptions.None);
+
+                if (!string.IsNullOrWhiteSpace(parts[0]) && !string.IsNullOrWhiteSpace(parts[1]))
+                {
+                    var min = dateParseFunction(parts[0]);
+                    var max = dateParseFunction(parts[1]);
+
+                    return min != null && max != null
+                        ? BuilDateRangeSearchExpression(propertySelector, min, max)
+                        : (e, s) => false;
+                }
+
+                if (!string.IsNullOrWhiteSpace(parts[0]))
+                {
+                    var min = dateParseFunction(parts[0]);
+
+                    return min != null
+                        ? BuilDateRangeSearchExpression(propertySelector, min, null)
+                        : (e, s) => false;
+                }
+
+                if (!string.IsNullOrWhiteSpace(parts[1]))
+                {
+                    var max = dateParseFunction(parts[1]);
+
+                    return max != null
+                        ? BuilDateRangeSearchExpression(propertySelector, null, max)
+                        : (e, s) => false;
+                }
+
+                return (e, s) => true;
+            };
+        }
+
+        /// <summary>
+        /// Builds a date range search expression using the given inputs. The expression uses "inclusive" comparison for
+        /// the lower border and "exclusive" comparison for the higher border.
+        /// </summary>
+        /// <param name="propertySelector"></param>
+        /// <param name="min"></param>
+        /// <param name="max"></param>
+        /// <returns></returns>
+        protected virtual Expression<Func<TEntity, string, bool>> BuilDateRangeSearchExpression(
+            Expression<Func<TEntity, DateTime>> propertySelector,
+            DateTime? min,
+            DateTime? max)
+        {
+            var entityParam = Expression.Parameter(typeof(TEntity), "e");
+            var searchTermParam = Expression.Parameter(typeof(string), "s");
+
+            var nullableMinConst = Expression.Constant(min, typeof(DateTime?));
+            var nullableMaxConst = Expression.Constant(max, typeof(DateTime?));
+            var minConst = Expression.Constant(min ?? DateTime.MinValue, typeof(DateTime));
+            var maxConst = Expression.Constant(max ?? DateTime.MaxValue, typeof(DateTime));
+            var nullConst = Expression.Constant(null, typeof(DateTime?));
+
+            if (min.HasValue && max.HasValue && min == max)
+            {
+                return Expression.Lambda<Func<TEntity, string, bool>>(
+                    Expression.Equal(
+                        Expression.Property(entityParam, PropertyHelper<TEntity>.GetProperty(propertySelector)),
+                        minConst),
+                    entityParam,
+                    searchTermParam);
+            }
+
+            return Expression.Lambda<Func<TEntity, string, bool>>(
+                Expression.AndAlso(
+                    Expression.OrElse(
+                        Expression.Equal(nullableMinConst, nullConst),
+                        Expression.GreaterThanOrEqual(
+                            Expression.Property(entityParam, PropertyHelper<TEntity>.GetProperty(propertySelector)),
+                            minConst)),
+                    Expression.OrElse(
+                        Expression.Equal(nullableMaxConst, nullConst),
+                        Expression.LessThan(
+                            Expression.Property(entityParam, PropertyHelper<TEntity>.GetProperty(propertySelector)),
+                            maxConst))),
+                entityParam,
+                searchTermParam);
+        }
+        #endregion
     }
 }

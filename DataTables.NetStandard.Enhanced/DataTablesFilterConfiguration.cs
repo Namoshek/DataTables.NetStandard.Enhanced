@@ -36,6 +36,12 @@ namespace DataTables.NetStandard.Enhanced
         public string DefaultNumericRangeInputPlaceholderValue { get; set; } = "From - To";
 
         /// <summary>
+        /// Defines the default placerholder displayed in date range inputs.
+        /// Can be used to localize the filter.
+        /// </summary>
+        public string DefaultDateRangeInputPlaceholderValue { get; set; } = "From ~ To";
+
+        /// <summary>
         /// Additional filter options used to initialize the yadcf DataTables filter system.
         /// </summary>
         public IDictionary<string, dynamic> AdditionalFilterOptions { get; set; } = new Dictionary<string, dynamic>();
