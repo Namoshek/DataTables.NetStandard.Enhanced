@@ -60,7 +60,10 @@ namespace DataTables.NetStandard.Enhanced.Sample.DataTables
                     PublicPropertyName = nameof(PersonViewModel.DateOfBirth),
                     PrivatePropertyName = nameof(Person.DateOfBirth),
                     IsOrderable = true,
-                    IsSearchable = false
+                    IsSearchable = true,
+                    SearchPredicate = (p, s) => false,
+                    ColumnSearchPredicateProvider = CreateDateRangeSearchPredicateProvider(p => p.DateOfBirth),
+                    ColumnFilter = CreateDateRangeFilter()
                 },
                 new EnhancedDataTablesColumn<Person, PersonViewModel>
                 {
