@@ -140,6 +140,27 @@ new EnhancedDataTablesColumn<Person, PersonViewModel>
 
 _Please note that also the value of a `LabelValuePair` has always to be a string as the search of DataTables works with strings only._
 
+### MultiSelect Filter
+
+Similar to the `SelectFilter`, the `MultiSelectFilter` provides select options, but in a way that allows selecting multiple at once.
+Because processing of this filter requires custom logic on the server-side, a special search predicate provider is being provided
+to simplify the usage. The `CreateMultiSelectColumnSearchPredicateProvider(expr)` method takes one argument which is supposed to be
+an expression selecting a property, optionally a nested one:
+
+```csharp
+new EnhancedDataTablesColumn<Person, PersonViewModel>
+{
+    PublicName = "country",
+    DisplayName = "Country",
+    PublicPropertyName = nameof(PersonViewModel.Country),
+    PrivatePropertyName = $"{nameof(Person.Location)}.{nameof(Location.Country)}",
+    IsOrderable = true,
+    IsSearchable = true,
+    ColumnSearchPredicateProvider = CreateMultiSelectColumnSearchPredicateProvider(p => p.Location.Country),
+    ColumnFilter = CreateMultiSelectFilter(p => new LabelValuePair(p.Location.Country))
+}
+```
+
 ### NumericRange Filter
 
 Based on the `TextInputFilter`, the `NumericRangeFilter` allows searching for entities by entering a numeric range in one of the following forms:
