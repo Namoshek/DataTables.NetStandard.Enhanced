@@ -9,11 +9,14 @@ namespace DataTables.NetStandard.Enhanced.Sample.DataTables.ViewModels
         public DefaultMappingProfile(IViewRenderService viewRenderService)
         {
             CreateMap<Person, PersonViewModel>()
+                .ForMember(vm => vm.LocationId, m => m.MapFrom(p => p.Location.Id))
                 .ForMember(vm => vm.Address, m => m.MapFrom(p => $"{p.Location.Street} {p.Location.HouseNumber}"))
                 .ForMember(vm => vm.PostCode, m => m.MapFrom(p => p.Location.PostCode))
                 .ForMember(vm => vm.City, m => m.MapFrom(p => p.Location.City))
                 .ForMember(vm => vm.Country, m => m.MapFrom(p => p.Location.Country))
                 .ForMember(vm => vm.FullAddress, m => m.MapFrom(p => p.Location.FullAddress))
+                .ForMember(vm => vm.LocationCreatedAt, m => m.MapFrom(p => p.Location.CreatedAt))
+                .ForMember(vm => vm.LocationUpdatedAt, m => m.MapFrom(p => p.Location.UpdatedAt))
 
                 // Raw columns containing some HTML (like action buttons) consist of simple strings. This means
                 // you can basically add a string column on the view model which does not have to exist on the

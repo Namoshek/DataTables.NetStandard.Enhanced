@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace DataTables.NetStandard.Enhanced.Sample.Models
@@ -7,6 +8,8 @@ namespace DataTables.NetStandard.Enhanced.Sample.Models
     {
         [Key]
         public long Id { get; set; }
+        public DateTimeOffset CreatedAt { get; set; }
+        public DateTimeOffset? UpdatedAt { get; set; }
         public string Street { get; set; }
         public string HouseNumber { get; set; }
         public string PostCode { get; set; }
