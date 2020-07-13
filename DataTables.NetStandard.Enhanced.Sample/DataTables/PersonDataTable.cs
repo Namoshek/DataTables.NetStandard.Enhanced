@@ -115,11 +115,35 @@ namespace DataTables.NetStandard.Enhanced.Sample.DataTables
                     PublicName = "fullAddress",
                     DisplayName = "Full Address",
                     PublicPropertyName = nameof(PersonViewModel.FullAddress),
-                    PrivatePropertyName = nameof(Person.Location.Id),
+                    PrivatePropertyName = $"{nameof(Person.Location)}.{nameof(Location.Id)}",
                     IsOrderable = true,
                     IsSearchable = true,
                     SearchPredicate = (p, s) => p.Location.Id.ToString() == s,
                     ColumnFilter = CreateSelectFilter(p => new LabelValuePair(p.Location.FullAddress, p.Location.Id.ToString()))
+                },
+                new EnhancedDataTablesColumn<Person, PersonViewModel>
+                {
+                    PublicName = "locationCreatedAt",
+                    DisplayName = "Location created at",
+                    PublicPropertyName = nameof(PersonViewModel.LocationCreatedAt),
+                    PrivatePropertyName = $"{nameof(Person.Location)}.{nameof(Location.CreatedAt)}",
+                    IsOrderable = true,
+                    IsSearchable = true,
+                    SearchPredicate = (p, s) => false,
+                    ColumnSearchPredicateProvider = CreateDateRangeSearchPredicateProvider(p => p.Location.CreatedAt),
+                    ColumnFilter = CreateDateRangeFilter()
+                },
+                new EnhancedDataTablesColumn<Person, PersonViewModel>
+                {
+                    PublicName = "locationUpdatedAt",
+                    DisplayName = "Location updated at",
+                    PublicPropertyName = nameof(PersonViewModel.LocationUpdatedAt),
+                    PrivatePropertyName = $"{nameof(Person.Location)}.{nameof(Location.UpdatedAt)}",
+                    IsOrderable = true,
+                    IsSearchable = true,
+                    SearchPredicate = (p, s) => false,
+                    ColumnSearchPredicateProvider = CreateDateRangeSearchPredicateProvider(p => p.Location.UpdatedAt),
+                    ColumnFilter = CreateDateRangeFilter()
                 },
                 new EnhancedDataTablesColumn<Person, PersonViewModel>
                 {

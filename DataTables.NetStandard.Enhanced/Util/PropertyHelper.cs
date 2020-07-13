@@ -48,13 +48,14 @@ namespace DataTables.NetStandard.Enhanced.Util
             
             if (expression is LambdaExpression lambdaExpression)
             {
-                if (lambdaExpression.Body is MemberExpression)
+                if (lambdaExpression.Body is MemberExpression memberBody)
                 {
-                    return (MemberExpression)lambdaExpression.Body;
+                    return memberBody;
                 }
-                else if (lambdaExpression.Body is UnaryExpression)
+                
+                if (lambdaExpression.Body is UnaryExpression unaryBody)
                 {
-                    return ((MemberExpression)((UnaryExpression)lambdaExpression.Body).Operand);
+                    return (MemberExpression)unaryBody.Operand;
                 }
             }
 

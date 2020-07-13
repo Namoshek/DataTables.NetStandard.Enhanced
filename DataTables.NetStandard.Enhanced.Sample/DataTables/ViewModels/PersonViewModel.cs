@@ -7,7 +7,6 @@ namespace DataTables.NetStandard.Enhanced.Sample.DataTables.ViewModels
     public class PersonViewModel
     {
         public long Id { get; set; }
-
         public string Name { get; set; }
         public string Email { get; set; }
         public string Address { get; set; }
@@ -15,6 +14,10 @@ namespace DataTables.NetStandard.Enhanced.Sample.DataTables.ViewModels
         public string City { get; set; }
         public string Country { get; set; }
         public string FullAddress { get; set; }
+        [JsonConverter(typeof(LocalDateTimeConverter), "dd.MM.yyyy HH:mm:ss")]
+        public DateTimeOffset LocationCreatedAt { get; set; }
+        [JsonConverter(typeof(LocalDateTimeConverter), "dd.MM.yyyy HH:mm:ss")]
+        public DateTimeOffset? LocationUpdatedAt { get; set; }
         public string Action { get; set; }
         public string Action2 { get; set; }
         public string Action3 { get; set; }
