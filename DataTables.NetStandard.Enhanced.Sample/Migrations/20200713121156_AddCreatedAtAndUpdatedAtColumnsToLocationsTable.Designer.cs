@@ -3,13 +3,15 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace DataTables.NetStandard.Enhanced.Sample.Migrations
 {
     [DbContext(typeof(SampleDbContext))]
-    partial class SampleDbContextModelSnapshot : ModelSnapshot
+    [Migration("20200713121156_AddCreatedAtAndUpdatedAtColumnsToLocationsTable")]
+    partial class AddCreatedAtAndUpdatedAtColumnsToLocationsTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
