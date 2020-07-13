@@ -407,7 +407,7 @@ namespace DataTables.NetStandard.Enhanced
         /// <returns></returns>
         protected virtual Expression<Func<TEntity, string, bool>> BuildNumericRangeSearchExpression(Expression<Func<TEntity, long>> propertySelector, long? min, long? max)
         {
-            var entityParam = Expression.Parameter(typeof(TEntity), "e");
+            var entityParam = propertySelector.Parameters.First();
             var searchTermParam = Expression.Parameter(typeof(string), "s");
 
             var nullableMinConst = Expression.Constant(min, typeof(long?));
@@ -421,12 +421,12 @@ namespace DataTables.NetStandard.Enhanced
                     Expression.OrElse(
                         Expression.Equal(nullableMinConst, nullConst),
                         Expression.GreaterThanOrEqual(
-                            Expression.Property(entityParam, PropertyHelper<TEntity>.GetProperty(propertySelector)),
+                            PropertyHelper<TEntity>.GetMemberExpression(propertySelector),
                             minConst)),
                     Expression.OrElse(
                         Expression.Equal(nullableMaxConst, nullConst),
                         Expression.LessThanOrEqual(
-                            Expression.Property(entityParam, PropertyHelper<TEntity>.GetProperty(propertySelector)),
+                            PropertyHelper<TEntity>.GetMemberExpression(propertySelector),
                             maxConst))),
                 entityParam,
                 searchTermParam);
@@ -497,7 +497,7 @@ namespace DataTables.NetStandard.Enhanced
         /// <returns></returns>
         protected virtual Expression<Func<TEntity, string, bool>> BuildNumericRangeSearchExpression(Expression<Func<TEntity, int>> propertySelector, int? min, int? max)
         {
-            var entityParam = Expression.Parameter(typeof(TEntity), "e");
+            var entityParam = propertySelector.Parameters.First();
             var searchTermParam = Expression.Parameter(typeof(string), "s");
 
             var nullableMinConst = Expression.Constant(min, typeof(int?));
@@ -511,13 +511,197 @@ namespace DataTables.NetStandard.Enhanced
                     Expression.OrElse(
                         Expression.Equal(nullableMinConst, nullConst),
                         Expression.GreaterThanOrEqual(
-                            Expression.Property(entityParam, PropertyHelper<TEntity>.GetProperty(propertySelector)),
+                            PropertyHelper<TEntity>.GetMemberExpression(propertySelector),
                             minConst)),
                     Expression.OrElse(
                         Expression.Equal(nullableMaxConst, nullConst),
                         Expression.LessThanOrEqual(
-                            Expression.Property(entityParam, PropertyHelper<TEntity>.GetProperty(propertySelector)),
+                            PropertyHelper<TEntity>.GetMemberExpression(propertySelector),
                             maxConst))),
+                entityParam,
+                searchTermParam);
+        }
+
+        /// <summary>
+        /// Returns a numeric range search predicate provider expression for the given <paramref name="propertySelector"/>.
+        /// </summary>
+        /// <param name="propertySelector"></param>
+        /// <param name="delimiter"></param>
+        /// <returns></returns>
+        protected virtual Func<string, Expression<Func<TEntity, string, bool>>> CreateNumericRangeSearchPredicateProvider(
+            Expression<Func<TEntity, long?>> propertySelector, 
+            string delimiter = "-")
+        {
+            return (s) =>
+            {
+                if (string.IsNullOrWhiteSpace(s))
+                {
+                    return (e, s) => true;
+                }
+
+                if (!s.Contains(delimiter))
+                {
+                    if (long.TryParse(s, out long val))
+                    {
+                        return BuildNumericRangeSearchExpression(propertySelector, val, val);
+                    }
+
+                    return (e, s) => false;
+                }
+
+                var parts = s.Split(new string[] { delimiter }, StringSplitOptions.None);
+
+                if (!string.IsNullOrWhiteSpace(parts[0]) && !string.IsNullOrWhiteSpace(parts[1]))
+                {
+                    if (long.TryParse(parts[0], out long min) && long.TryParse(parts[1], out long max))
+                    {
+                        return BuildNumericRangeSearchExpression(propertySelector, min, max);
+                    }
+                }
+
+                if (!string.IsNullOrWhiteSpace(parts[0]))
+                {
+                    if (long.TryParse(parts[0], out long min))
+                    {
+                        return BuildNumericRangeSearchExpression(propertySelector, min, null);
+                    }
+                }
+
+                if (!string.IsNullOrWhiteSpace(parts[1]))
+                {
+                    if (long.TryParse(parts[1], out long max))
+                    {
+                        return BuildNumericRangeSearchExpression(propertySelector, null, max);
+                    }
+                }
+
+                return (e, s) => true;
+            };
+        }
+
+        /// <summary>
+        /// Builds a numeric range search expression using the given inputs. The expression will ignore borders set to <c>null</c>
+        /// while filtering the data.
+        /// </summary>
+        /// <param name="propertySelector"></param>
+        /// <param name="min"></param>
+        /// <param name="max"></param>
+        /// <returns></returns>
+        protected virtual Expression<Func<TEntity, string, bool>> BuildNumericRangeSearchExpression(
+            Expression<Func<TEntity, long?>> propertySelector, long? min, long? max)
+        {
+            var entityParam = propertySelector.Parameters.First();
+            var searchTermParam = Expression.Parameter(typeof(string), "s");
+
+            var nullableMinConst = Expression.Constant(min, typeof(long?));
+            var nullableMaxConst = Expression.Constant(max, typeof(long?));
+            var nullConst = Expression.Constant(null, typeof(long?));
+
+            return Expression.Lambda<Func<TEntity, string, bool>>(
+                Expression.AndAlso(
+                    Expression.OrElse(
+                        Expression.Equal(nullableMinConst, nullConst),
+                        Expression.GreaterThanOrEqual(
+                            PropertyHelper<TEntity>.GetMemberExpression(propertySelector),
+                            nullableMinConst)),
+                    Expression.OrElse(
+                        Expression.Equal(nullableMaxConst, nullConst),
+                        Expression.LessThanOrEqual(
+                            PropertyHelper<TEntity>.GetMemberExpression(propertySelector),
+                            nullableMaxConst))),
+                entityParam,
+                searchTermParam);
+        }
+
+        /// <summary>
+        /// Returns a numeric range search predicate provider expression for the given <paramref name="propertySelector"/>.
+        /// </summary>
+        /// <param name="propertySelector"></param>
+        /// <param name="delimiter"></param>
+        /// <returns></returns>
+        protected virtual Func<string, Expression<Func<TEntity, string, bool>>> CreateNumericRangeSearchPredicateProvider(
+            Expression<Func<TEntity, int?>> propertySelector, 
+            string delimiter = "-")
+        {
+            return (s) =>
+            {
+                if (string.IsNullOrWhiteSpace(s))
+                {
+                    return (e, s) => true;
+                }
+
+                if (!s.Contains(delimiter))
+                {
+                    if (int.TryParse(s, out int val))
+                    {
+                        return BuildNumericRangeSearchExpression(propertySelector, val, val);
+                    }
+
+                    return (e, s) => false;
+                }
+
+                var parts = s.Split(new string[] { delimiter }, StringSplitOptions.None);
+
+                if (!string.IsNullOrWhiteSpace(parts[0]) && !string.IsNullOrWhiteSpace(parts[1]))
+                {
+                    if (int.TryParse(parts[0], out int min) && int.TryParse(parts[1], out int max))
+                    {
+                        return BuildNumericRangeSearchExpression(propertySelector, min, max);
+                    }
+                }
+
+                if (!string.IsNullOrWhiteSpace(parts[0]))
+                {
+                    if (int.TryParse(parts[0], out int min))
+                    {
+                        return BuildNumericRangeSearchExpression(propertySelector, min, null);
+                    }
+                }
+
+                if (!string.IsNullOrWhiteSpace(parts[1]))
+                {
+                    if (int.TryParse(parts[1], out int max))
+                    {
+                        return BuildNumericRangeSearchExpression(propertySelector, null, max);
+                    }
+                }
+
+                return (e, s) => true;
+            };
+        }
+
+        /// <summary>
+        /// Builds a numeric range search expression using the given inputs. The expression will ignore borders set to <c>null</c>
+        /// while filtering the data.
+        /// </summary>
+        /// <param name="propertySelector"></param>
+        /// <param name="min"></param>
+        /// <param name="max"></param>
+        /// <returns></returns>
+        protected virtual Expression<Func<TEntity, string, bool>> BuildNumericRangeSearchExpression(
+            Expression<Func<TEntity, int?>> propertySelector, 
+            int? min, 
+            int? max)
+        {
+            var entityParam = propertySelector.Parameters.First();
+            var searchTermParam = Expression.Parameter(typeof(string), "s");
+
+            var nullableMinConst = Expression.Constant(min, typeof(int?));
+            var nullableMaxConst = Expression.Constant(max, typeof(int?));
+            var nullConst = Expression.Constant(null, typeof(int?));
+
+            return Expression.Lambda<Func<TEntity, string, bool>>(
+                Expression.AndAlso(
+                    Expression.OrElse(
+                        Expression.Equal(nullableMinConst, nullConst),
+                        Expression.GreaterThanOrEqual(
+                            PropertyHelper<TEntity>.GetMemberExpression(propertySelector),
+                            nullableMinConst)),
+                    Expression.OrElse(
+                        Expression.Equal(nullableMaxConst, nullConst),
+                        Expression.LessThanOrEqual(
+                            PropertyHelper<TEntity>.GetMemberExpression(propertySelector),
+                            nullableMaxConst))),
                 entityParam,
                 searchTermParam);
         }

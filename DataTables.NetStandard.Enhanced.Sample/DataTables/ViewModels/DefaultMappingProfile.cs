@@ -9,6 +9,7 @@ namespace DataTables.NetStandard.Enhanced.Sample.DataTables.ViewModels
         public DefaultMappingProfile(IViewRenderService viewRenderService)
         {
             CreateMap<Person, PersonViewModel>()
+                .ForMember(vm => vm.LocationId, m => m.MapFrom(p => p.Location.Id))
                 .ForMember(vm => vm.Address, m => m.MapFrom(p => $"{p.Location.Street} {p.Location.HouseNumber}"))
                 .ForMember(vm => vm.PostCode, m => m.MapFrom(p => p.Location.PostCode))
                 .ForMember(vm => vm.City, m => m.MapFrom(p => p.Location.City))

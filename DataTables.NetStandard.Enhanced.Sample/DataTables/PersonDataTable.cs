@@ -67,6 +67,17 @@ namespace DataTables.NetStandard.Enhanced.Sample.DataTables
                 },
                 new EnhancedDataTablesColumn<Person, PersonViewModel>
                 {
+                    PublicName = "locationId",
+                    DisplayName = "Location ID",
+                    PublicPropertyName = nameof(PersonViewModel.LocationId),
+                    PrivatePropertyName = $"{nameof(Person.Location)}.{nameof(Location.Id)}",
+                    IsOrderable = true,
+                    IsSearchable = true,
+                    ColumnSearchPredicateProvider = CreateNumericRangeSearchPredicateProvider(p => p.Location.Id),
+                    ColumnFilter = CreateNumericRangeFilter()
+                },
+                new EnhancedDataTablesColumn<Person, PersonViewModel>
+                {
                     PublicName = "address",
                     DisplayName = "Address",
                     PublicPropertyName = nameof(PersonViewModel.Address),
