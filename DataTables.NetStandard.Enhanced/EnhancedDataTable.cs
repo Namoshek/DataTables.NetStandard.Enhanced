@@ -503,7 +503,7 @@ namespace DataTables.NetStandard.Enhanced
             var nullableMinConst = Expression.Constant(min, typeof(int?));
             var nullableMaxConst = Expression.Constant(max, typeof(int?));
             var minConst = Expression.Constant(min ?? 0, typeof(int));
-            var maxConst = Expression.Constant(max ?? long.MaxValue, typeof(int));
+            var maxConst = Expression.Constant(max ?? int.MaxValue, typeof(int));
             var nullConst = Expression.Constant(null, typeof(int?));
 
             return Expression.Lambda<Func<TEntity, string, bool>>(
