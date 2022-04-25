@@ -1,12 +1,12 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Reflection;
+using System.Security.Cryptography;
 using DataTables.NetStandard.Enhanced.Filters;
 using DataTables.NetStandard.Enhanced.Util;
 using DataTables.NetStandard.Extensions;
-using MoreLinq.Extensions;
+using MoreLinq;
 using Newtonsoft.Json;
 
 namespace DataTables.NetStandard.Enhanced
@@ -156,9 +156,8 @@ namespace DataTables.NetStandard.Enhanced
                 query = query.Apply(request);
             }
 
-            // TODO: As soon as EFCore supports translation of .GroupBy(expr).Select(e => e.FirstOrDefault()),
-            //       this method can be improved significantly by applying the group by instead of distinctby.
-            return query.Select(selector.Compile())
+            return query
+                .Select(selector.Compile())
                 .DistinctBy(e => e.Value)
                 .ToList();
         }
@@ -282,12 +281,13 @@ namespace DataTables.NetStandard.Enhanced
         {
             var columns = EnhancedColumns();
 
-            columns.Where(c => c.ColumnFilter is IFilterWithSelectableData<TEntity> && (c.ColumnFilter as IFilterWithSelectableData<TEntity>).Data == null)
+            columns
+                .Where(c => c.ColumnFilter is IFilterWithSelectableData<TEntity>
+                    && (c.ColumnFilter as IFilterWithSelectableData<TEntity>).Data == null)
                 .ToList()
                 .ForEach(c =>
                 {
-                    var col = c.ColumnFilter as IFilterWithSelectableData<TEntity>;
-                    if (col.KeyValueSelector() != null)
+                    if (c.ColumnFilter is IFilterWithSelectableData<TEntity> col && col.KeyValueSelector() != null)
                     {
                         col.Data = GetDistinctColumnValuesForSelect(col.KeyValueSelector(), request).Cast<object>().ToList();
                     }
@@ -306,7 +306,9 @@ namespace DataTables.NetStandard.Enhanced
         /// <param name="propertySelector"></param>
         /// <param name="delimiter"></param>
         /// <returns></returns>
-        protected virtual Func<string, Expression<Func<TEntity, string, bool>>> CreateMultiSelectSearchPredicateProvider(Expression<Func<TEntity, string>> propertySelector, string delimiter = "|")
+        protected virtual Func<string, Expression<Func<TEntity, string, bool>>> CreateMultiSelectSearchPredicateProvider(
+            Expression<Func<TEntity, string>> propertySelector,
+            string delimiter = "|")
         {
             return (s) =>
             {
@@ -322,10 +324,12 @@ namespace DataTables.NetStandard.Enhanced
         /// <param name="propertySelector"></param>
         /// <param name="items"></param>
         /// <returns></returns>
-        protected virtual Expression<Func<TEntity, string, bool>> BuildMultiSelectSearchExpression(Expression<Func<TEntity, string>> propertySelector, List<string> items)
+        protected virtual Expression<Func<TEntity, string, bool>> BuildMultiSelectSearchExpression(
+            Expression<Func<TEntity, string>> propertySelector,
+            List<string> items)
         {
             var entityParam = propertySelector.Parameters.First();
-            var searchTermParam = Expression.Parameter(typeof(string), "s");
+            var searchTermParam = Expression.Parameter(typeof(string), $"s{RandomNumberGenerator.GetInt32(int.MaxValue)}");
 
             var itemsConst = Expression.Constant(items, typeof(List<string>));
 
@@ -348,7 +352,9 @@ namespace DataTables.NetStandard.Enhanced
         /// <param name="propertySelector"></param>
         /// <param name="delimiter"></param>
         /// <returns></returns>
-        protected virtual Func<string, Expression<Func<TEntity, string, bool>>> CreateNumericRangeSearchPredicateProvider(Expression<Func<TEntity, long>> propertySelector, string delimiter = "-")
+        protected virtual Func<string, Expression<Func<TEntity, string, bool>>> CreateNumericRangeSearchPredicateProvider(
+            Expression<Func<TEntity, long>> propertySelector,
+            string delimiter = "-")
         {
             return (s) =>
             {
@@ -405,10 +411,13 @@ namespace DataTables.NetStandard.Enhanced
         /// <param name="min"></param>
         /// <param name="max"></param>
         /// <returns></returns>
-        protected virtual Expression<Func<TEntity, string, bool>> BuildNumericRangeSearchExpression(Expression<Func<TEntity, long>> propertySelector, long? min, long? max)
+        protected virtual Expression<Func<TEntity, string, bool>> BuildNumericRangeSearchExpression(
+            Expression<Func<TEntity, long>> propertySelector,
+            long? min,
+            long? max)
         {
             var entityParam = propertySelector.Parameters.First();
-            var searchTermParam = Expression.Parameter(typeof(string), "s");
+            var searchTermParam = Expression.Parameter(typeof(string), $"s{RandomNumberGenerator.GetInt32(int.MaxValue)}");
 
             var nullableMinConst = Expression.Constant(min, typeof(long?));
             var nullableMaxConst = Expression.Constant(max, typeof(long?));
@@ -438,7 +447,9 @@ namespace DataTables.NetStandard.Enhanced
         /// <param name="propertySelector"></param>
         /// <param name="delimiter"></param>
         /// <returns></returns>
-        protected virtual Func<string, Expression<Func<TEntity, string, bool>>> CreateNumericRangeSearchPredicateProvider(Expression<Func<TEntity, int>> propertySelector, string delimiter = "-")
+        protected virtual Func<string, Expression<Func<TEntity, string, bool>>> CreateNumericRangeSearchPredicateProvider(
+            Expression<Func<TEntity, int>> propertySelector,
+            string delimiter = "-")
         {
             return (s) =>
             {
@@ -495,10 +506,13 @@ namespace DataTables.NetStandard.Enhanced
         /// <param name="min"></param>
         /// <param name="max"></param>
         /// <returns></returns>
-        protected virtual Expression<Func<TEntity, string, bool>> BuildNumericRangeSearchExpression(Expression<Func<TEntity, int>> propertySelector, int? min, int? max)
+        protected virtual Expression<Func<TEntity, string, bool>> BuildNumericRangeSearchExpression(
+            Expression<Func<TEntity, int>> propertySelector,
+            int? min,
+            int? max)
         {
             var entityParam = propertySelector.Parameters.First();
-            var searchTermParam = Expression.Parameter(typeof(string), "s");
+            var searchTermParam = Expression.Parameter(typeof(string), $"s{RandomNumberGenerator.GetInt32(int.MaxValue)}");
 
             var nullableMinConst = Expression.Constant(min, typeof(int?));
             var nullableMaxConst = Expression.Constant(max, typeof(int?));
@@ -588,10 +602,12 @@ namespace DataTables.NetStandard.Enhanced
         /// <param name="max"></param>
         /// <returns></returns>
         protected virtual Expression<Func<TEntity, string, bool>> BuildNumericRangeSearchExpression(
-            Expression<Func<TEntity, long?>> propertySelector, long? min, long? max)
+            Expression<Func<TEntity, long?>> propertySelector,
+            long? min,
+            long? max)
         {
             var entityParam = propertySelector.Parameters.First();
-            var searchTermParam = Expression.Parameter(typeof(string), "s");
+            var searchTermParam = Expression.Parameter(typeof(string), $"s{RandomNumberGenerator.GetInt32(int.MaxValue)}");
 
             var nullableMinConst = Expression.Constant(min, typeof(long?));
             var nullableMaxConst = Expression.Constant(max, typeof(long?));
@@ -684,7 +700,7 @@ namespace DataTables.NetStandard.Enhanced
             int? max)
         {
             var entityParam = propertySelector.Parameters.First();
-            var searchTermParam = Expression.Parameter(typeof(string), "s");
+            var searchTermParam = Expression.Parameter(typeof(string), $"s{RandomNumberGenerator.GetInt32(int.MaxValue)}");
 
             var nullableMinConst = Expression.Constant(min, typeof(int?));
             var nullableMaxConst = Expression.Constant(max, typeof(int?));
@@ -797,7 +813,7 @@ namespace DataTables.NetStandard.Enhanced
             DateTimeOffset? max)
         {
             var entityParam = propertySelector.Parameters.First();
-            var searchTermParam = Expression.Parameter(typeof(string), "s");
+            var searchTermParam = Expression.Parameter(typeof(string), $"s{RandomNumberGenerator.GetInt32(int.MaxValue)}");
 
             var nullableMinConst = Expression.Constant(min, typeof(DateTimeOffset?));
             var nullableMaxConst = Expression.Constant(max, typeof(DateTimeOffset?));
@@ -920,7 +936,7 @@ namespace DataTables.NetStandard.Enhanced
             DateTime? max)
         {
             var entityParam = propertySelector.Parameters.First();
-            var searchTermParam = Expression.Parameter(typeof(string), "s");
+            var searchTermParam = Expression.Parameter(typeof(string), $"s{RandomNumberGenerator.GetInt32(int.MaxValue)}");
 
             var nullableMinConst = Expression.Constant(min, typeof(DateTime?));
             var nullableMaxConst = Expression.Constant(max, typeof(DateTime?));
@@ -1043,7 +1059,7 @@ namespace DataTables.NetStandard.Enhanced
             DateTimeOffset? max)
         {
             var entityParam = propertySelector.Parameters.First();
-            var searchTermParam = Expression.Parameter(typeof(string), "s");
+            var searchTermParam = Expression.Parameter(typeof(string), $"s{RandomNumberGenerator.GetInt32(int.MaxValue)}");
 
             var nullableMinConst = Expression.Constant(min, typeof(DateTimeOffset?));
             var nullableMaxConst = Expression.Constant(max, typeof(DateTimeOffset?));
@@ -1164,7 +1180,7 @@ namespace DataTables.NetStandard.Enhanced
             DateTime? max)
         {
             var entityParam = propertySelector.Parameters.First();
-            var searchTermParam = Expression.Parameter(typeof(string), "s");
+            var searchTermParam = Expression.Parameter(typeof(string), $"s{RandomNumberGenerator.GetInt32(int.MaxValue)}");
 
             var nullableMinConst = Expression.Constant(min, typeof(DateTime?));
             var nullableMaxConst = Expression.Constant(max, typeof(DateTime?));
