@@ -1,4 +1,4 @@
-# DataTables.NetStandard.Enhanced
+# DataTables.NetStandard.Enhanced [![Nuget](https://img.shields.io/nuget/v/DataTables.NetStandard.Enhanced?style=flat-square)](https://nuget.org/packages/DataTables.NetStandard.Enhanced)
 
 This package provides an enhanced version of [DataTables.NetStandard](https://github.com/Namoshek/DataTables.NetStandard).
 
