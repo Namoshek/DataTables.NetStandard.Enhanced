@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using AutoMapper;
 using DataTables.NetStandard.Enhanced.Filters;
@@ -130,7 +130,9 @@ namespace DataTables.NetStandard.Enhanced.Sample.DataTables
                     IsOrderable = true,
                     IsSearchable = true,
                     SearchPredicate = (p, s) => p.Location.Id.ToString() == s,
-                    ColumnFilter = CreateSelectFilter(p => new LabelValuePair(p.Location.FullAddress, p.Location.Id.ToString()))
+                    ColumnFilter = CreateSelectFilter(p => new LabelValuePair(
+                        p.Location.Street + " " + p.Location.HouseNumber + ", " + p.Location.PostCode + " " + p.Location.City + " (" + p.Location.Country + ")",
+                        p.Location.Id.ToString()))
                 },
                 new EnhancedDataTablesColumn<Person, PersonViewModel>
                 {
