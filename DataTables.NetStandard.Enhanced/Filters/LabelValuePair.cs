@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+using System.Linq.Expressions;
+using Newtonsoft.Json;
 
 namespace DataTables.NetStandard.Enhanced.Filters
 {
@@ -9,6 +10,14 @@ namespace DataTables.NetStandard.Enhanced.Filters
 
         [JsonProperty(PropertyName = "label")]
         public string Label { get; set; }
+
+        /// <summary>
+        /// A default constructor to be used in expressions which are translated to SQL,
+        /// e.g. <see cref="EnhancedDataTable{TEntity, TEntityViewModel}.CreateSelectFilter(Expression{System.Func{TEntity, LabelValuePair}}, System.Action{SelectFilter{TEntity}})"/>.
+        /// </summary>
+        public LabelValuePair()
+        {
+        }
 
         public LabelValuePair(string labelAndValue)
         {

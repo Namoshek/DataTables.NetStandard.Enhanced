@@ -121,7 +121,11 @@ namespace DataTables.NetStandard.Enhanced.Sample.DataTables
                     IsOrderable = true,
                     IsSearchable = true,
                     SearchPredicateProvider = CreateMultiSelectSearchPredicateProvider(p => p.Location.PostCode),
-                    ColumnFilter = CreateMultiSelectFilter(p => new LabelValuePair(p.Location.PostCode))
+                    ColumnFilter = CreateMultiSelectFilter(p => new LabelValuePair
+                    {
+                        Label = p.Location.PostCode,
+                        Value = p.Location.PostCode
+                    })
                 },
                 new EnhancedDataTablesColumn<Person, PersonViewModel>
                 {
@@ -131,7 +135,11 @@ namespace DataTables.NetStandard.Enhanced.Sample.DataTables
                     PrivatePropertyName = $"{nameof(Person.Location)}.{nameof(Location.City)}",
                     IsOrderable = true,
                     IsSearchable = true,
-                    ColumnFilter = CreateSelectFilter(p => new LabelValuePair(p.Location.City))
+                    ColumnFilter = CreateMultiSelectFilter(p => new LabelValuePair
+                    {
+                        Label = p.Location.City,
+                        Value = p.Location.City
+                    })
                 },
                 new EnhancedDataTablesColumn<Person, PersonViewModel>
                 {
@@ -141,7 +149,11 @@ namespace DataTables.NetStandard.Enhanced.Sample.DataTables
                     PrivatePropertyName = $"{nameof(Person.Location)}.{nameof(Location.Country)}",
                     IsOrderable = true,
                     IsSearchable = true,
-                    ColumnFilter = CreateSelectFilter(p => new LabelValuePair(p.Location.Country), p =>
+                    ColumnFilter = CreateSelectFilter(p => new LabelValuePair
+                    {
+                        Label = p.Location.Country,
+                        Value = p.Location.Country
+                    }, p =>
                     {
                         p.DefaultSelectionLabelValue = "Choose something";
                     })
@@ -155,9 +167,11 @@ namespace DataTables.NetStandard.Enhanced.Sample.DataTables
                     IsOrderable = true,
                     IsSearchable = true,
                     SearchPredicate = (p, s) => p.Location.Id.ToString() == s,
-                    ColumnFilter = CreateSelectFilter(p => new LabelValuePair(
-                        p.Location.Street + " " + p.Location.HouseNumber + ", " + p.Location.PostCode + " " + p.Location.City + " (" + p.Location.Country + ")",
-                        p.Location.Id.ToString()))
+                    ColumnFilter = CreateSelectFilter(p => new LabelValuePair
+                    {
+                        Label = p.Location.Street + " " + p.Location.HouseNumber + ", " + p.Location.PostCode + " " + p.Location.City + " (" + p.Location.Country + ")",
+                        Value = p.Location.Id.ToString()
+                    })
                 },
                 new EnhancedDataTablesColumn<Person, PersonViewModel>
                 {
