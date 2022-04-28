@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using AutoMapper;
@@ -64,6 +65,30 @@ namespace DataTables.NetStandard.Enhanced.Sample.DataTables
                     SearchPredicate = (p, s) => false,
                     ColumnSearchPredicateProvider = CreateDateRangeSearchPredicateProvider(p => p.DateOfBirth),
                     ColumnFilter = CreateDateRangeFilter()
+                },
+                new EnhancedDataTablesColumn<Person, PersonViewModel>
+                {
+                    PublicName = "gender",
+                    DisplayName = "Gender",
+                    PublicPropertyName = nameof(PersonViewModel.Gender),
+                    PrivatePropertyName = nameof(Person.Gender),
+                    IsOrderable = true,
+                    IsSearchable = true,
+                    SearchPredicate = (p, s) => false,
+                    ColumnSearchPredicate = (p, s) => ((int)p.Gender).ToString() == s,
+                    ColumnFilter = CreateSelectFilter(Enum.GetValues(typeof(EGender)).Cast<EGender>().Select(e => new LabelValuePair(e.ToString(), e.GetHashCode().ToString())).ToList())
+                },
+                new EnhancedDataTablesColumn<Person, PersonViewModel>
+                {
+                    PublicName = "genderSpecified",
+                    DisplayName = "Gender specified",
+                    PublicPropertyName = nameof(PersonViewModel.GenderSpecified),
+                    PrivatePropertyName = nameof(Person.Gender),
+                    IsOrderable = false,
+                    IsSearchable = true,
+                    SearchPredicate = (p, s) => false,
+                    ColumnSearchPredicate = (p, s) => (s == "0" && p.Gender == EGender.Unspecified) || (s == "1" && p.Gender != EGender.Unspecified),
+                    ColumnFilter = CreateSelectFilter(new List<LabelValuePair> { new LabelValuePair("No", "0"), new LabelValuePair("Yes", "1") })
                 },
                 new EnhancedDataTablesColumn<Person, PersonViewModel>
                 {

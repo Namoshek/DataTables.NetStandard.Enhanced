@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using DataTables.NetStandard.Enhanced.Sample.Models;
 using DataTables.NetStandard.TemplateMapper;
 
@@ -17,6 +17,8 @@ namespace DataTables.NetStandard.Enhanced.Sample.DataTables.ViewModels
                 .ForMember(vm => vm.FullAddress, m => m.MapFrom(p => p.Location.FullAddress))
                 .ForMember(vm => vm.LocationCreatedAt, m => m.MapFrom(p => p.Location.CreatedAt))
                 .ForMember(vm => vm.LocationUpdatedAt, m => m.MapFrom(p => p.Location.UpdatedAt))
+                .ForMember(vm => vm.Gender, m => m.MapFrom(p => p.Gender.ToString()))
+                .ForMember(vm => vm.GenderSpecified, m => m.MapFrom(p => p.Gender == EGender.Unspecified ? "No" : "Yes"))
 
                 // Raw columns containing some HTML (like action buttons) consist of simple strings. This means
                 // you can basically add a string column on the view model which does not have to exist on the

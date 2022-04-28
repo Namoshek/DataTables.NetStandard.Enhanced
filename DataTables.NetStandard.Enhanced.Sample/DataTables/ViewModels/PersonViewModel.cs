@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using DataTables.NetStandard.Enhanced.Sample.Util;
 using Newtonsoft.Json;
 
@@ -25,5 +25,9 @@ namespace DataTables.NetStandard.Enhanced.Sample.DataTables.ViewModels
 
         [JsonConverter(typeof(LocalDateTimeConverter), "dd.MM.yyyy HH:mm:ss")]
         public DateTimeOffset DateOfBirth { get; set; }
+
+        public string Gender { get; set; }
+
+        public string GenderSpecified { get; set; }
     }
 }
