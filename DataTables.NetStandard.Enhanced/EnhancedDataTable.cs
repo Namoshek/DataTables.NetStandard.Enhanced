@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Security.Cryptography;
 using DataTables.NetStandard.Enhanced.Filters;
 using DataTables.NetStandard.Enhanced.Util;
 using DataTables.NetStandard.Extensions;
@@ -329,7 +328,7 @@ namespace DataTables.NetStandard.Enhanced
             List<string> items)
         {
             var entityParam = propertySelector.Parameters.First();
-            var searchTermParam = Expression.Parameter(typeof(string), $"s{RandomNumberGenerator.GetInt32(int.MaxValue)}");
+            var searchTermParam = Expression.Parameter(typeof(string));
 
             var itemsConst = Expression.Constant(items, typeof(List<string>));
 
@@ -417,7 +416,7 @@ namespace DataTables.NetStandard.Enhanced
             long? max)
         {
             var entityParam = propertySelector.Parameters.First();
-            var searchTermParam = Expression.Parameter(typeof(string), $"s{RandomNumberGenerator.GetInt32(int.MaxValue)}");
+            var searchTermParam = Expression.Parameter(typeof(string));
 
             var nullableMinConst = Expression.Constant(min, typeof(long?));
             var nullableMaxConst = Expression.Constant(max, typeof(long?));
@@ -512,7 +511,7 @@ namespace DataTables.NetStandard.Enhanced
             int? max)
         {
             var entityParam = propertySelector.Parameters.First();
-            var searchTermParam = Expression.Parameter(typeof(string), $"s{RandomNumberGenerator.GetInt32(int.MaxValue)}");
+            var searchTermParam = Expression.Parameter(typeof(string));
 
             var nullableMinConst = Expression.Constant(min, typeof(int?));
             var nullableMaxConst = Expression.Constant(max, typeof(int?));
@@ -607,7 +606,7 @@ namespace DataTables.NetStandard.Enhanced
             long? max)
         {
             var entityParam = propertySelector.Parameters.First();
-            var searchTermParam = Expression.Parameter(typeof(string), $"s{RandomNumberGenerator.GetInt32(int.MaxValue)}");
+            var searchTermParam = Expression.Parameter(typeof(string));
 
             var nullableMinConst = Expression.Constant(min, typeof(long?));
             var nullableMaxConst = Expression.Constant(max, typeof(long?));
@@ -700,7 +699,7 @@ namespace DataTables.NetStandard.Enhanced
             int? max)
         {
             var entityParam = propertySelector.Parameters.First();
-            var searchTermParam = Expression.Parameter(typeof(string), $"s{RandomNumberGenerator.GetInt32(int.MaxValue)}");
+            var searchTermParam = Expression.Parameter(typeof(string));
 
             var nullableMinConst = Expression.Constant(min, typeof(int?));
             var nullableMaxConst = Expression.Constant(max, typeof(int?));
@@ -813,7 +812,7 @@ namespace DataTables.NetStandard.Enhanced
             DateTimeOffset? max)
         {
             var entityParam = propertySelector.Parameters.First();
-            var searchTermParam = Expression.Parameter(typeof(string), $"s{RandomNumberGenerator.GetInt32(int.MaxValue)}");
+            var searchTermParam = Expression.Parameter(typeof(string));
 
             var nullableMinConst = Expression.Constant(min, typeof(DateTimeOffset?));
             var nullableMaxConst = Expression.Constant(max, typeof(DateTimeOffset?));
@@ -936,7 +935,7 @@ namespace DataTables.NetStandard.Enhanced
             DateTime? max)
         {
             var entityParam = propertySelector.Parameters.First();
-            var searchTermParam = Expression.Parameter(typeof(string), $"s{RandomNumberGenerator.GetInt32(int.MaxValue)}");
+            var searchTermParam = Expression.Parameter(typeof(string));
 
             var nullableMinConst = Expression.Constant(min, typeof(DateTime?));
             var nullableMaxConst = Expression.Constant(max, typeof(DateTime?));
@@ -1059,7 +1058,7 @@ namespace DataTables.NetStandard.Enhanced
             DateTimeOffset? max)
         {
             var entityParam = propertySelector.Parameters.First();
-            var searchTermParam = Expression.Parameter(typeof(string), $"s{RandomNumberGenerator.GetInt32(int.MaxValue)}");
+            var searchTermParam = Expression.Parameter(typeof(string));
 
             var nullableMinConst = Expression.Constant(min, typeof(DateTimeOffset?));
             var nullableMaxConst = Expression.Constant(max, typeof(DateTimeOffset?));
@@ -1180,7 +1179,7 @@ namespace DataTables.NetStandard.Enhanced
             DateTime? max)
         {
             var entityParam = propertySelector.Parameters.First();
-            var searchTermParam = Expression.Parameter(typeof(string), $"s{RandomNumberGenerator.GetInt32(int.MaxValue)}");
+            var searchTermParam = Expression.Parameter(typeof(string));
 
             var nullableMinConst = Expression.Constant(min, typeof(DateTime?));
             var nullableMaxConst = Expression.Constant(max, typeof(DateTime?));
