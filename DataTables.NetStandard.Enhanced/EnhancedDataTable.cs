@@ -156,8 +156,9 @@ namespace DataTables.NetStandard.Enhanced
             }
 
             return query
-                .Select(selector.Compile())
-                .DistinctBy(e => e.Value)
+                .Select(selector)
+                .GroupBy(e => e.Value)
+                .Select(g => g.First())
                 .ToList();
         }
         
