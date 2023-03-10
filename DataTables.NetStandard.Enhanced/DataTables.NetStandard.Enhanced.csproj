@@ -22,7 +22,7 @@
 
   <ItemGroup>
     <PackageReference Include="DataTables.NetStandard" Version="3.0.1" />
-    <PackageReference Include="morelinq" Version="3.4.0" />
+    <PackageReference Include="morelinq" Version="3.4.1" />
   </ItemGroup>
 
 </Project>
