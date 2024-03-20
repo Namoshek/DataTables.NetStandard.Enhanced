@@ -14,7 +14,7 @@ namespace DataTables.NetStandard.Enhanced
     {
         protected DataTablesFilterConfiguration _filterConfiguration;
 
-        public EnhancedDataTable()
+        protected EnhancedDataTable()
         {
             _filterConfiguration = new DataTablesFilterConfiguration();
         }
@@ -104,7 +104,7 @@ namespace DataTables.NetStandard.Enhanced
         /// <param name="keyValueSelector"></param>
         /// <param name="configure"></param>
         /// <returns></returns>
-        public virtual SelectFilter<TEntity> CreateSelectFilter(Expression<Func<TEntity, LabelValuePair>> keyValueSelector, 
+        public virtual SelectFilter<TEntity> CreateSelectFilter(Expression<Func<TEntity, LabelValuePair>> keyValueSelector,
             Action<SelectFilter<TEntity>> configure = null)
         {
             var filter = new SelectFilter<TEntity>(keyValueSelector)
@@ -126,7 +126,7 @@ namespace DataTables.NetStandard.Enhanced
         /// <param name="filterOptions"></param>
         /// <param name="configure"></param>
         /// <returns></returns>
-        public virtual SelectFilter<TEntity> CreateSelectFilter(IList<LabelValuePair> filterOptions, 
+        public virtual SelectFilter<TEntity> CreateSelectFilter(IList<LabelValuePair> filterOptions,
             Action<SelectFilter<TEntity>> configure = null)
         {
             var filter = new SelectFilter<TEntity>(filterOptions)
@@ -144,7 +144,8 @@ namespace DataTables.NetStandard.Enhanced
         /// <summary>
         /// Returns a list of distinct column values that can be used for select filters.
         /// </summary>
-        /// <param name="property"></param>
+        /// <param name="selector"></param>
+        /// <param name="request"></param>
         public virtual IList<LabelValuePair> GetDistinctColumnValuesForSelect(Expression<Func<TEntity, LabelValuePair>> selector,
             DataTablesRequest<TEntity, TEntityViewModel> request)
         {
@@ -161,7 +162,8 @@ namespace DataTables.NetStandard.Enhanced
                 .Select(g => g.First())
                 .ToList();
         }
-        
+
+        /// <summary>
         /// Creates a new multi select filter based on the default configuration and the given key value selector.
         /// Can be further configured by the given <paramref name="configure"/> action.
         /// </summary>
@@ -331,7 +333,7 @@ namespace DataTables.NetStandard.Enhanced
             var entityParam = propertySelector.Parameters.First();
             var searchTermParam = Expression.Parameter(typeof(string));
 
-            var itemsConst = Expression.Constant(items, typeof(List<string>));
+            var itemsConst = ExpressionHelper.CreateConstantFilterExpression(items, typeof(List<string>));
 
             var containsMethod = typeof(List<string>).GetMethod(nameof(List<string>.Contains), new Type[] { typeof(string) });
 
@@ -419,10 +421,10 @@ namespace DataTables.NetStandard.Enhanced
             var entityParam = propertySelector.Parameters.First();
             var searchTermParam = Expression.Parameter(typeof(string));
 
-            var nullableMinConst = Expression.Constant(min, typeof(long?));
-            var nullableMaxConst = Expression.Constant(max, typeof(long?));
-            var minConst = Expression.Constant(min ?? 0, typeof(long));
-            var maxConst = Expression.Constant(max ?? long.MaxValue, typeof(long));
+            var nullableMinConst = ExpressionHelper.CreateConstantFilterExpression(min, typeof(long?));
+            var nullableMaxConst = ExpressionHelper.CreateConstantFilterExpression(max, typeof(long?));
+            var minConst = ExpressionHelper.CreateConstantFilterExpression(min ?? 0, typeof(long));
+            var maxConst = ExpressionHelper.CreateConstantFilterExpression(max ?? long.MaxValue, typeof(long));
             var nullConst = Expression.Constant(null, typeof(long?));
 
             return Expression.Lambda<Func<TEntity, string, bool>>(
@@ -514,10 +516,10 @@ namespace DataTables.NetStandard.Enhanced
             var entityParam = propertySelector.Parameters.First();
             var searchTermParam = Expression.Parameter(typeof(string));
 
-            var nullableMinConst = Expression.Constant(min, typeof(int?));
-            var nullableMaxConst = Expression.Constant(max, typeof(int?));
-            var minConst = Expression.Constant(min ?? 0, typeof(int));
-            var maxConst = Expression.Constant(max ?? int.MaxValue, typeof(int));
+            var nullableMinConst = ExpressionHelper.CreateConstantFilterExpression(min, typeof(int?));
+            var nullableMaxConst = ExpressionHelper.CreateConstantFilterExpression(max, typeof(int?));
+            var minConst = ExpressionHelper.CreateConstantFilterExpression(min ?? 0, typeof(int));
+            var maxConst = ExpressionHelper.CreateConstantFilterExpression(max ?? int.MaxValue, typeof(int));
             var nullConst = Expression.Constant(null, typeof(int?));
 
             return Expression.Lambda<Func<TEntity, string, bool>>(
@@ -543,7 +545,7 @@ namespace DataTables.NetStandard.Enhanced
         /// <param name="delimiter"></param>
         /// <returns></returns>
         protected virtual Func<string, Expression<Func<TEntity, string, bool>>> CreateNumericRangeSearchPredicateProvider(
-            Expression<Func<TEntity, long?>> propertySelector, 
+            Expression<Func<TEntity, long?>> propertySelector,
             string delimiter = "-")
         {
             return (s) =>
@@ -609,8 +611,8 @@ namespace DataTables.NetStandard.Enhanced
             var entityParam = propertySelector.Parameters.First();
             var searchTermParam = Expression.Parameter(typeof(string));
 
-            var nullableMinConst = Expression.Constant(min, typeof(long?));
-            var nullableMaxConst = Expression.Constant(max, typeof(long?));
+            var nullableMinConst = ExpressionHelper.CreateConstantFilterExpression(min, typeof(long?));
+            var nullableMaxConst = ExpressionHelper.CreateConstantFilterExpression(max, typeof(long?));
             var nullConst = Expression.Constant(null, typeof(long?));
 
             return Expression.Lambda<Func<TEntity, string, bool>>(
@@ -636,7 +638,7 @@ namespace DataTables.NetStandard.Enhanced
         /// <param name="delimiter"></param>
         /// <returns></returns>
         protected virtual Func<string, Expression<Func<TEntity, string, bool>>> CreateNumericRangeSearchPredicateProvider(
-            Expression<Func<TEntity, int?>> propertySelector, 
+            Expression<Func<TEntity, int?>> propertySelector,
             string delimiter = "-")
         {
             return (s) =>
@@ -695,15 +697,15 @@ namespace DataTables.NetStandard.Enhanced
         /// <param name="max"></param>
         /// <returns></returns>
         protected virtual Expression<Func<TEntity, string, bool>> BuildNumericRangeSearchExpression(
-            Expression<Func<TEntity, int?>> propertySelector, 
-            int? min, 
+            Expression<Func<TEntity, int?>> propertySelector,
+            int? min,
             int? max)
         {
             var entityParam = propertySelector.Parameters.First();
             var searchTermParam = Expression.Parameter(typeof(string));
 
-            var nullableMinConst = Expression.Constant(min, typeof(int?));
-            var nullableMaxConst = Expression.Constant(max, typeof(int?));
+            var nullableMinConst = ExpressionHelper.CreateConstantFilterExpression(min, typeof(int?));
+            var nullableMaxConst = ExpressionHelper.CreateConstantFilterExpression(max, typeof(int?));
             var nullConst = Expression.Constant(null, typeof(int?));
 
             return Expression.Lambda<Func<TEntity, string, bool>>(
@@ -732,7 +734,7 @@ namespace DataTables.NetStandard.Enhanced
         /// <param name="dateParseFunction"></param>
         /// <returns></returns>
         protected virtual Func<string, Expression<Func<TEntity, string, bool>>> CreateDateRangeSearchPredicateProvider(
-            Expression<Func<TEntity, DateTimeOffset>> propertySelector, 
+            Expression<Func<TEntity, DateTimeOffset>> propertySelector,
             string delimiter = "~",
             Func<string, DateTimeOffset?> dateParseFunction = null)
         {
@@ -808,17 +810,17 @@ namespace DataTables.NetStandard.Enhanced
         /// <param name="max"></param>
         /// <returns></returns>
         protected virtual Expression<Func<TEntity, string, bool>> BuilDateRangeSearchExpression(
-            Expression<Func<TEntity, DateTimeOffset>> propertySelector, 
-            DateTimeOffset? min, 
+            Expression<Func<TEntity, DateTimeOffset>> propertySelector,
+            DateTimeOffset? min,
             DateTimeOffset? max)
         {
             var entityParam = propertySelector.Parameters.First();
             var searchTermParam = Expression.Parameter(typeof(string));
 
-            var nullableMinConst = Expression.Constant(min, typeof(DateTimeOffset?));
-            var nullableMaxConst = Expression.Constant(max, typeof(DateTimeOffset?));
-            var minConst = Expression.Constant(min ?? DateTimeOffset.MinValue, typeof(DateTimeOffset));
-            var maxConst = Expression.Constant(max ?? DateTimeOffset.MaxValue, typeof(DateTimeOffset));
+            var nullableMinConst = ExpressionHelper.CreateConstantFilterExpression(min, typeof(DateTimeOffset?));
+            var nullableMaxConst = ExpressionHelper.CreateConstantFilterExpression(max, typeof(DateTimeOffset?));
+            var minConst = ExpressionHelper.CreateConstantFilterExpression(min ?? DateTimeOffset.MinValue, typeof(DateTimeOffset));
+            var maxConst = ExpressionHelper.CreateConstantFilterExpression(max ?? DateTimeOffset.MaxValue, typeof(DateTimeOffset));
             var nullConst = Expression.Constant(null, typeof(DateTimeOffset?));
 
             if (min.HasValue && max.HasValue && min == max)
@@ -855,7 +857,7 @@ namespace DataTables.NetStandard.Enhanced
         /// <param name="dateParseFunction"></param>
         /// <returns></returns>
         protected virtual Func<string, Expression<Func<TEntity, string, bool>>> CreateDateRangeSearchPredicateProvider(
-            Expression<Func<TEntity, DateTime>> propertySelector, 
+            Expression<Func<TEntity, DateTime>> propertySelector,
             string delimiter = "~",
             Func<string, DateTime?> dateParseFunction = null)
         {
@@ -938,10 +940,10 @@ namespace DataTables.NetStandard.Enhanced
             var entityParam = propertySelector.Parameters.First();
             var searchTermParam = Expression.Parameter(typeof(string));
 
-            var nullableMinConst = Expression.Constant(min, typeof(DateTime?));
-            var nullableMaxConst = Expression.Constant(max, typeof(DateTime?));
-            var minConst = Expression.Constant(min ?? DateTime.MinValue, typeof(DateTime));
-            var maxConst = Expression.Constant(max ?? DateTime.MaxValue, typeof(DateTime));
+            var nullableMinConst = ExpressionHelper.CreateConstantFilterExpression(min, typeof(DateTime?));
+            var nullableMaxConst = ExpressionHelper.CreateConstantFilterExpression(max, typeof(DateTime?));
+            var minConst = ExpressionHelper.CreateConstantFilterExpression(min ?? DateTime.MinValue, typeof(DateTime));
+            var maxConst = ExpressionHelper.CreateConstantFilterExpression(max ?? DateTime.MaxValue, typeof(DateTime));
             var nullConst = Expression.Constant(null, typeof(DateTime?));
 
             if (min.HasValue && max.HasValue && min == max)
@@ -1061,8 +1063,8 @@ namespace DataTables.NetStandard.Enhanced
             var entityParam = propertySelector.Parameters.First();
             var searchTermParam = Expression.Parameter(typeof(string));
 
-            var nullableMinConst = Expression.Constant(min, typeof(DateTimeOffset?));
-            var nullableMaxConst = Expression.Constant(max, typeof(DateTimeOffset?));
+            var nullableMinConst = ExpressionHelper.CreateConstantFilterExpression(min, typeof(DateTimeOffset?));
+            var nullableMaxConst = ExpressionHelper.CreateConstantFilterExpression(max, typeof(DateTimeOffset?));
             var nullConst = Expression.Constant(null, typeof(DateTimeOffset?));
 
             if (min.HasValue && max.HasValue && min == max)
@@ -1182,8 +1184,8 @@ namespace DataTables.NetStandard.Enhanced
             var entityParam = propertySelector.Parameters.First();
             var searchTermParam = Expression.Parameter(typeof(string));
 
-            var nullableMinConst = Expression.Constant(min, typeof(DateTime?));
-            var nullableMaxConst = Expression.Constant(max, typeof(DateTime?));
+            var nullableMinConst = ExpressionHelper.CreateConstantFilterExpression(min, typeof(DateTime?));
+            var nullableMaxConst = ExpressionHelper.CreateConstantFilterExpression(max, typeof(DateTime?));
             var nullConst = Expression.Constant(null, typeof(DateTime?));
 
             if (min.HasValue && max.HasValue && min == max)
